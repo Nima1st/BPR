@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_ToBe_V4"
+  targetNamespace="http://nima-edtech.example.org/bpr/tobe/v4">
+
+  <bpmn:collaboration id="Collab_ToBe_V4">
+    <bpmn:participant id="Part_Enrollment_TB" name="Enrollment Unit / System (خارج از محدوده)" />
+    <bpmn:participant id="Part_Unit_TB" name="Learning Operations &amp; Personalization" processRef="Process_Unit_TB" />
+    <bpmn:participant id="Part_Learner_TB" name="Learner (فراگیر - خارج از محدوده)" />
+
+    <bpmn:messageFlow id="TOBE-MF01" name="اعلان خودکار ثبت‌نام قطعی" sourceRef="Part_Enrollment_TB" targetRef="TOBE-S01" />
+    <bpmn:messageFlow id="TOBE-MF02" name="استعلام مغایرت ثبت‌نام" sourceRef="TOBE-A02" targetRef="Part_Enrollment_TB" />
+    <bpmn:messageFlow id="TOBE-MF02_IN" name="دریافت اصلاحیه ثبت‌نام" sourceRef="Part_Enrollment_TB" targetRef="TOBE-A02" />
+    <bpmn:messageFlow id="TOBE-MF03" name="دعوت‌نامه پورتال ارزیابی تعاملی" sourceRef="TOBE-A03" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF04" name="بسته کامل ارزیابی اعتبارسنجی‌شده" sourceRef="Part_Learner_TB" targetRef="TOBE-E01" />
+    <bpmn:messageFlow id="TOBE-MF05" name="یادآوری هوشمند خودکار" sourceRef="TOBE-A04" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF06" name="ارسال ارزیابی پس از یادآوری" sourceRef="Part_Learner_TB" targetRef="TOBE-E03" />
+    <bpmn:messageFlow id="TOBE-MF07" name="ابلاغ مسیر پایه و لینک ارزیابی آتی" sourceRef="TOBE-A11" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF08" name="ارسال لینک مسیر و گزارش شکاف مهارتی" sourceRef="TOBE-A08" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF09" name="درخواست بازبینی/تعدیل مسیر" sourceRef="Part_Learner_TB" targetRef="TOBE-E05" />
+    <bpmn:messageFlow id="TOBE-MF10" name="ابلاغ تثبیت نهایی مسیر یا نتیجه بازبینی" sourceRef="TOBE-A10" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF11" name="استعلام هدف یادگیری (در صورت نیاز)" sourceRef="TOBE-A07" targetRef="Part_Learner_TB" />
+    <bpmn:messageFlow id="TOBE-MF12" name="پاسخ شفاف‌سازی فراگیر (در صورت استعلام)" sourceRef="Part_Learner_TB" targetRef="TOBE-A07" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Unit_TB" name="To-Be Learner Diagnostic Assessment, Skill Gap Analysis &amp; Personalized Learning Path Assignment (V4)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_TB">
+      <bpmn:lane id="Lane_Engine_TB" name="Automated Personalization Engine (لایه خودکار واحد)">
+        <bpmn:flowNodeRef>TOBE-S01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-G01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-MG01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-G02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-G03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A11</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-END-02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-MG02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A05</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A06</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-G04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-MG03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A08</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-G05</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E06</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-E05</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-MG04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A10</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-END-01</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Spec_TB" name="Learning Personalization Specialist (مالک پرونده - استثناها و موارد مرزی)">
+        <bpmn:flowNodeRef>TOBE-A02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A07</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TOBE-A09</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="TOBE-S01" name="دریافت اعلان خودکار ثبت‌نام قطعی">
+      <bpmn:outgoing>TOBE-SF01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_TOBE_S01" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="TOBE-A01" name="TOBE-A01: همگام‌سازی خودکار پروفایل و اعتبارسنجی ثبت‌نام">
+      <bpmn:incoming>TOBE-SF01</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF02</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="TOBE-G01" name="داده‌های ثبت‌نام معتبر است؟" gatewayDirection="Diverging">
+      <bpmn:incoming>TOBE-SF02</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF03</bpmn:outgoing>
+      <bpmn:outgoing>TOBE-SF04</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="TOBE-A02" name="TOBE-A02: رفع مغایرت پرونده و فعال‌سازی استثنایی">
+      <bpmn:incoming>TOBE-SF04</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF05</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="TOBE-MG01" name="ادغام مسیر رفع مغایرت" gatewayDirection="Converging">
+      <bpmn:incoming>TOBE-SF03</bpmn:incoming>
+      <bpmn:incoming>TOBE-SF05</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF06</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="TOBE-A03" name="TOBE-A03: ایجاد و ارسال خودکار دعوت‌نامه پورتال ارزیابی">
+      <bpmn:incoming>TOBE-SF06</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF07</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:eventBasedGateway id="TOBE-G02" name="انتظار بسته کامل یا مهلت اولیه" gatewayDirection="Diverging">
+      <bpmn:incoming>TOBE-SF07</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF08</bpmn:outgoing>
+      <bpmn:outgoing>TOBE-SF09</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E01" name="دریافت بسته کامل ارزیابی">
+      <bpmn:incoming>TOBE-SF08</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF10</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_TOBE_E01" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E02" name="انقضای مهلت اولیه (فرض: ۴۸ ساعت)">
+      <bpmn:incoming>TOBE-SF09</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF11</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_TOBE_E02">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:sendTask id="TOBE-A04" name="TOBE-A04: ارسال خودکار یادآوری هوشمند">
+      <bpmn:incoming>TOBE-SF11</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF12</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:eventBasedGateway id="TOBE-G03" name="انتظار تکمیل یا سررسید نهایی" gatewayDirection="Diverging">
+      <bpmn:incoming>TOBE-SF12</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF13</bpmn:outgoing>
+      <bpmn:outgoing>TOBE-SF14</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E03" name="دریافت ارزیابی پس از یادآوری">
+      <bpmn:incoming>TOBE-SF13</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF15</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_TOBE_E03" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E04" name="انقضای مهلت نهایی (فرض: ۴۸ ساعت)">
+      <bpmn:incoming>TOBE-SF14</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF16</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_TOBE_E04">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:serviceTask id="TOBE-A11" name="TOBE-A11: فعال‌سازی خودکار مسیر پایه و ثبت وضعیت ناتمام">
+      <bpmn:incoming>TOBE-SF16</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="TOBE-END-02" name="پایان: تخصیص مسیر استاندارد پایه">
+      <bpmn:incoming>TOBE-SF17</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:exclusiveGateway id="TOBE-MG02" name="ادغام دریافت ارزیابی" gatewayDirection="Converging">
+      <bpmn:incoming>TOBE-SF10</bpmn:incoming>
+      <bpmn:incoming>TOBE-SF15</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="TOBE-A05" name="TOBE-A05: نمره‌دهی خودکار و محاسبه ماتریس شکاف سه مهارت">
+      <bpmn:incoming>TOBE-SF18</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF19</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:businessRuleTask id="TOBE-A06" name="TOBE-A06: ارزیابی قواعد تخصیص و سنجش قطعیت (Triage)">
+      <bpmn:incoming>TOBE-SF19</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF20</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <bpmn:exclusiveGateway id="TOBE-G04" name="پروفایل شفاف و عبور مستقیم (STP)؟" gatewayDirection="Diverging">
+      <bpmn:incoming>TOBE-SF20</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF21</bpmn:outgoing>
+      <bpmn:outgoing>TOBE-SF22</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="TOBE-A07" name="TOBE-A07: تحلیل تخصصی پروفایل مرزی و تنظیم مسیر">
+      <bpmn:incoming>TOBE-SF22</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF23</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="TOBE-MG03" name="ادغام مسیر مستقیم و بررسی تخصصی" gatewayDirection="Converging">
+      <bpmn:incoming>TOBE-SF21</bpmn:incoming>
+      <bpmn:incoming>TOBE-SF23</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF24</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="TOBE-A08" name="TOBE-A08: فعال‌سازی خودکار LMS و ارسال گزارش شکاف">
+      <bpmn:incoming>TOBE-SF24</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF25</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:eventBasedGateway id="TOBE-G05" name="پنجره بازبینی ۴۸ ساعته یا درخواست بازبینی" gatewayDirection="Diverging">
+      <bpmn:incoming>TOBE-SF25</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF26</bpmn:outgoing>
+      <bpmn:outgoing>TOBE-SF27</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E06" name="انقضای پنجره بازبینی بدون اعتراض (فرض: ۴۸ ساعت)">
+      <bpmn:incoming>TOBE-SF26</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF28</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_TOBE_E06">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="TOBE-E05" name="دریافت درخواست بازبینی فراگیر">
+      <bpmn:incoming>TOBE-SF27</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF29</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_TOBE_E05" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="TOBE-A09" name="TOBE-A09: رسیدگی به درخواست بازبینی و تعدیل/ابقای مسیر">
+      <bpmn:incoming>TOBE-SF29</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF30</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="TOBE-MG04" name="ادغام انقضای مهلت و نتیجه بازبینی" gatewayDirection="Converging">
+      <bpmn:incoming>TOBE-SF28</bpmn:incoming>
+      <bpmn:incoming>TOBE-SF30</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF31</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="TOBE-A10" name="TOBE-A10: تثبیت نهایی مسیر در سامانه، بستن پنجره و ابلاغ نهایی">
+      <bpmn:incoming>TOBE-SF31</bpmn:incoming>
+      <bpmn:outgoing>TOBE-SF32</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="TOBE-END-01" name="پایان: تثبیت مسیر یادگیری شخصی‌سازی‌شده">
+      <bpmn:incoming>TOBE-SF32</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="TOBE-SF01" sourceRef="TOBE-S01" targetRef="TOBE-A01" />
+    <bpmn:sequenceFlow id="TOBE-SF02" sourceRef="TOBE-A01" targetRef="TOBE-G01" />
+    <bpmn:sequenceFlow id="TOBE-SF03" name="بله (داده معتبر)" sourceRef="TOBE-G01" targetRef="TOBE-MG01">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">داده‌های ثبت‌نام معتبر و منطبق است</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="TOBE-SF04" name="خیر (مغایرت داده)" sourceRef="TOBE-G01" targetRef="TOBE-A02">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">مغایرت یا نقص داده ثبت‌نام</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="TOBE-SF05" sourceRef="TOBE-A02" targetRef="TOBE-MG01" />
+    <bpmn:sequenceFlow id="TOBE-SF06" sourceRef="TOBE-MG01" targetRef="TOBE-A03" />
+    <bpmn:sequenceFlow id="TOBE-SF07" sourceRef="TOBE-A03" targetRef="TOBE-G02" />
+    <bpmn:sequenceFlow id="TOBE-SF08" sourceRef="TOBE-G02" targetRef="TOBE-E01" />
+    <bpmn:sequenceFlow id="TOBE-SF09" sourceRef="TOBE-G02" targetRef="TOBE-E02" />
+    <bpmn:sequenceFlow id="TOBE-SF10" sourceRef="TOBE-E01" targetRef="TOBE-MG02" />
+    <bpmn:sequenceFlow id="TOBE-SF11" sourceRef="TOBE-E02" targetRef="TOBE-A04" />
+    <bpmn:sequenceFlow id="TOBE-SF12" sourceRef="TOBE-A04" targetRef="TOBE-G03" />
+    <bpmn:sequenceFlow id="TOBE-SF13" sourceRef="TOBE-G03" targetRef="TOBE-E03" />
+    <bpmn:sequenceFlow id="TOBE-SF14" sourceRef="TOBE-G03" targetRef="TOBE-E04" />
+    <bpmn:sequenceFlow id="TOBE-SF15" sourceRef="TOBE-E03" targetRef="TOBE-MG02" />
+    <bpmn:sequenceFlow id="TOBE-SF16" sourceRef="TOBE-E04" targetRef="TOBE-A11" />
+    <bpmn:sequenceFlow id="TOBE-SF17" sourceRef="TOBE-A11" targetRef="TOBE-END-02" />
+    <bpmn:sequenceFlow id="TOBE-SF18" sourceRef="TOBE-MG02" targetRef="TOBE-A05" />
+    <bpmn:sequenceFlow id="TOBE-SF19" sourceRef="TOBE-A05" targetRef="TOBE-A06" />
+    <bpmn:sequenceFlow id="TOBE-SF20" sourceRef="TOBE-A06" targetRef="TOBE-G04" />
+    <bpmn:sequenceFlow id="TOBE-SF21" name="بله (عبور مستقیم STP)" sourceRef="TOBE-G04" targetRef="TOBE-MG03">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">پروفایل شفاف و واجد شرایط STP</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="TOBE-SF22" name="خیر (پروفایل مرزی)" sourceRef="TOBE-G04" targetRef="TOBE-A07">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">پروفایل مرزی، نامتوازن یا نیازمند قضاوت تخصصی</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="TOBE-SF23" sourceRef="TOBE-A07" targetRef="TOBE-MG03" />
+    <bpmn:sequenceFlow id="TOBE-SF24" sourceRef="TOBE-MG03" targetRef="TOBE-A08" />
+    <bpmn:sequenceFlow id="TOBE-SF25" sourceRef="TOBE-A08" targetRef="TOBE-G05" />
+    <bpmn:sequenceFlow id="TOBE-SF26" sourceRef="TOBE-G05" targetRef="TOBE-E06" />
+    <bpmn:sequenceFlow id="TOBE-SF27" sourceRef="TOBE-G05" targetRef="TOBE-E05" />
+    <bpmn:sequenceFlow id="TOBE-SF28" sourceRef="TOBE-E06" targetRef="TOBE-MG04" />
+    <bpmn:sequenceFlow id="TOBE-SF29" sourceRef="TOBE-E05" targetRef="TOBE-A09" />
+    <bpmn:sequenceFlow id="TOBE-SF30" sourceRef="TOBE-A09" targetRef="TOBE-MG04" />
+    <bpmn:sequenceFlow id="TOBE-SF31" sourceRef="TOBE-MG04" targetRef="TOBE-A10" />
+    <bpmn:sequenceFlow id="TOBE-SF32" sourceRef="TOBE-A10" targetRef="TOBE-END-01" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ToBe_V4">
+    <bpmndi:BPMNPlane id="BPMNPlane_ToBe_V4" bpmnElement="Collab_ToBe_V4">
+
+      <bpmndi:BPMNShape id="Shape_Part_Enrollment_TB" bpmnElement="Part_Enrollment_TB" isHorizontal="true">
+        <omgdc:Bounds x="100" y="40" width="2600" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Part_Unit_TB" bpmnElement="Part_Unit_TB" isHorizontal="true">
+        <omgdc:Bounds x="100" y="140" width="2600" height="540" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Engine_TB" bpmnElement="Lane_Engine_TB" isHorizontal="true">
+        <omgdc:Bounds x="130" y="140" width="2570" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Spec_TB" bpmnElement="Lane_Spec_TB" isHorizontal="true">
+        <omgdc:Bounds x="130" y="470" width="2570" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Part_Learner_TB" bpmnElement="Part_Learner_TB" isHorizontal="true">
+        <omgdc:Bounds x="100" y="710" width="2600" height="70" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_TOBE_S01" bpmnElement="TOBE-S01">
+        <omgdc:Bounds x="180" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A01" bpmnElement="TOBE-A01">
+        <omgdc:Bounds x="265" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_G01" bpmnElement="TOBE-G01" isMarkerVisible="true">
+        <omgdc:Bounds x="445" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A02" bpmnElement="TOBE-A02">
+        <omgdc:Bounds x="405" y="540" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_MG01" bpmnElement="TOBE-MG01" isMarkerVisible="true">
+        <omgdc:Bounds x="575" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A03" bpmnElement="TOBE-A03">
+        <omgdc:Bounds x="675" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_G02" bpmnElement="TOBE-G02">
+        <omgdc:Bounds x="855" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E01" bpmnElement="TOBE-E01">
+        <omgdc:Bounds x="960" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E02" bpmnElement="TOBE-E02">
+        <omgdc:Bounds x="900" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A04" bpmnElement="TOBE-A04">
+        <omgdc:Bounds x="995" y="365" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_G03" bpmnElement="TOBE-G03">
+        <omgdc:Bounds x="1160" y="375" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E03" bpmnElement="TOBE-E03">
+        <omgdc:Bounds x="1167" y="318" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E04" bpmnElement="TOBE-E04">
+        <omgdc:Bounds x="1260" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A11" bpmnElement="TOBE-A11">
+        <omgdc:Bounds x="1345" y="365" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_END02" bpmnElement="TOBE-END-02">
+        <omgdc:Bounds x="1525" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_MG02" bpmnElement="TOBE-MG02" isMarkerVisible="true">
+        <omgdc:Bounds x="1225" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A05" bpmnElement="TOBE-A05">
+        <omgdc:Bounds x="1325" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A06" bpmnElement="TOBE-A06">
+        <omgdc:Bounds x="1505" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_G04" bpmnElement="TOBE-G04" isMarkerVisible="true">
+        <omgdc:Bounds x="1685" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A07" bpmnElement="TOBE-A07">
+        <omgdc:Bounds x="1645" y="540" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_MG03" bpmnElement="TOBE-MG03" isMarkerVisible="true">
+        <omgdc:Bounds x="1815" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A08" bpmnElement="TOBE-A08">
+        <omgdc:Bounds x="1915" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_G05" bpmnElement="TOBE-G05">
+        <omgdc:Bounds x="2095" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E06" bpmnElement="TOBE-E06">
+        <omgdc:Bounds x="2200" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_E05" bpmnElement="TOBE-E05">
+        <omgdc:Bounds x="2102" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A09" bpmnElement="TOBE-A09">
+        <omgdc:Bounds x="2160" y="540" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_MG04" bpmnElement="TOBE-MG04" isMarkerVisible="true">
+        <omgdc:Bounds x="2320" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_A10" bpmnElement="TOBE-A10">
+        <omgdc:Bounds x="2420" y="235" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TOBE_END01" bpmnElement="TOBE-END-01">
+        <omgdc:Bounds x="2600" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF01" bpmnElement="TOBE-SF01">
+        <omgdi:waypoint x="216" y="270" />
+        <omgdi:waypoint x="265" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF02" bpmnElement="TOBE-SF02">
+        <omgdi:waypoint x="395" y="270" />
+        <omgdi:waypoint x="445" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF03" bpmnElement="TOBE-SF03">
+        <omgdi:waypoint x="495" y="270" />
+        <omgdi:waypoint x="575" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF04" bpmnElement="TOBE-SF04">
+        <omgdi:waypoint x="470" y="295" />
+        <omgdi:waypoint x="470" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF05" bpmnElement="TOBE-SF05">
+        <omgdi:waypoint x="535" y="575" />
+        <omgdi:waypoint x="600" y="575" />
+        <omgdi:waypoint x="600" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF06" bpmnElement="TOBE-SF06">
+        <omgdi:waypoint x="625" y="270" />
+        <omgdi:waypoint x="675" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF07" bpmnElement="TOBE-SF07">
+        <omgdi:waypoint x="805" y="270" />
+        <omgdi:waypoint x="855" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF08" bpmnElement="TOBE-SF08">
+        <omgdi:waypoint x="905" y="270" />
+        <omgdi:waypoint x="960" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF09" bpmnElement="TOBE-SF09">
+        <omgdi:waypoint x="880" y="295" />
+        <omgdi:waypoint x="880" y="400" />
+        <omgdi:waypoint x="900" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF10" bpmnElement="TOBE-SF10">
+        <omgdi:waypoint x="996" y="270" />
+        <omgdi:waypoint x="1225" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF11" bpmnElement="TOBE-SF11">
+        <omgdi:waypoint x="936" y="400" />
+        <omgdi:waypoint x="995" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF12" bpmnElement="TOBE-SF12">
+        <omgdi:waypoint x="1125" y="400" />
+        <omgdi:waypoint x="1160" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF13" bpmnElement="TOBE-SF13">
+        <omgdi:waypoint x="1185" y="375" />
+        <omgdi:waypoint x="1185" y="354" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF14" bpmnElement="TOBE-SF14">
+        <omgdi:waypoint x="1210" y="400" />
+        <omgdi:waypoint x="1260" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF15" bpmnElement="TOBE-SF15">
+        <omgdi:waypoint x="1203" y="336" />
+        <omgdi:waypoint x="1250" y="336" />
+        <omgdi:waypoint x="1250" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF16" bpmnElement="TOBE-SF16">
+        <omgdi:waypoint x="1296" y="400" />
+        <omgdi:waypoint x="1345" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF17" bpmnElement="TOBE-SF17">
+        <omgdi:waypoint x="1475" y="400" />
+        <omgdi:waypoint x="1525" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF18" bpmnElement="TOBE-SF18">
+        <omgdi:waypoint x="1275" y="270" />
+        <omgdi:waypoint x="1325" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF19" bpmnElement="TOBE-SF19">
+        <omgdi:waypoint x="1455" y="270" />
+        <omgdi:waypoint x="1505" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF20" bpmnElement="TOBE-SF20">
+        <omgdi:waypoint x="1635" y="270" />
+        <omgdi:waypoint x="1685" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF21" bpmnElement="TOBE-SF21">
+        <omgdi:waypoint x="1735" y="270" />
+        <omgdi:waypoint x="1815" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF22" bpmnElement="TOBE-SF22">
+        <omgdi:waypoint x="1710" y="295" />
+        <omgdi:waypoint x="1710" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF23" bpmnElement="TOBE-SF23">
+        <omgdi:waypoint x="1775" y="575" />
+        <omgdi:waypoint x="1840" y="575" />
+        <omgdi:waypoint x="1840" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF24" bpmnElement="TOBE-SF24">
+        <omgdi:waypoint x="1865" y="270" />
+        <omgdi:waypoint x="1915" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF25" bpmnElement="TOBE-SF25">
+        <omgdi:waypoint x="2045" y="270" />
+        <omgdi:waypoint x="2095" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF26" bpmnElement="TOBE-SF26">
+        <omgdi:waypoint x="2145" y="270" />
+        <omgdi:waypoint x="2200" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF27" bpmnElement="TOBE-SF27">
+        <omgdi:waypoint x="2120" y="295" />
+        <omgdi:waypoint x="2120" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF28" bpmnElement="TOBE-SF28">
+        <omgdi:waypoint x="2236" y="270" />
+        <omgdi:waypoint x="2320" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF29" bpmnElement="TOBE-SF29">
+        <omgdi:waypoint x="2138" y="400" />
+        <omgdi:waypoint x="2225" y="400" />
+        <omgdi:waypoint x="2225" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF30" bpmnElement="TOBE-SF30">
+        <omgdi:waypoint x="2290" y="575" />
+        <omgdi:waypoint x="2345" y="575" />
+        <omgdi:waypoint x="2345" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF31" bpmnElement="TOBE-SF31">
+        <omgdi:waypoint x="2370" y="270" />
+        <omgdi:waypoint x="2420" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_SF32" bpmnElement="TOBE-SF32">
+        <omgdi:waypoint x="2550" y="270" />
+        <omgdi:waypoint x="2600" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF01" bpmnElement="TOBE-MF01">
+        <omgdi:waypoint x="198" y="110" />
+        <omgdi:waypoint x="198" y="252" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF02" bpmnElement="TOBE-MF02">
+        <omgdi:waypoint x="415" y="540" />
+        <omgdi:waypoint x="415" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF02_IN" bpmnElement="TOBE-MF02_IN">
+        <omgdi:waypoint x="432" y="110" />
+        <omgdi:waypoint x="432" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF03" bpmnElement="TOBE-MF03">
+        <omgdi:waypoint x="740" y="305" />
+        <omgdi:waypoint x="740" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF04" bpmnElement="TOBE-MF04">
+        <omgdi:waypoint x="978" y="710" />
+        <omgdi:waypoint x="978" y="288" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF05" bpmnElement="TOBE-MF05">
+        <omgdi:waypoint x="1060" y="435" />
+        <omgdi:waypoint x="1060" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF06" bpmnElement="TOBE-MF06">
+        <omgdi:waypoint x="1225" y="710" />
+        <omgdi:waypoint x="1225" y="336" />
+        <omgdi:waypoint x="1203" y="336" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF07" bpmnElement="TOBE-MF07">
+        <omgdi:waypoint x="1410" y="435" />
+        <omgdi:waypoint x="1410" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF08" bpmnElement="TOBE-MF08">
+        <omgdi:waypoint x="1980" y="305" />
+        <omgdi:waypoint x="1980" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF09" bpmnElement="TOBE-MF09">
+        <omgdi:waypoint x="2120" y="710" />
+        <omgdi:waypoint x="2120" y="418" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF10" bpmnElement="TOBE-MF10">
+        <omgdi:waypoint x="2485" y="305" />
+        <omgdi:waypoint x="2485" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF11" bpmnElement="TOBE-MF11">
+        <omgdi:waypoint x="1690" y="610" />
+        <omgdi:waypoint x="1690" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TOBE_MF12" bpmnElement="TOBE-MF12">
+        <omgdi:waypoint x="1730" y="710" />
+        <omgdi:waypoint x="1730" y="610" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

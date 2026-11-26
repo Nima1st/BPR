@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="fa" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BPR Workflow Generator — As-Is &amp; To-Be</title>
+  <style>
+    :root {
+      --bg-app: #f1f5f9;
+      --bg-toolbar: #ffffff;
+      --bg-stage: #e2e8f0;
+      --border: #cbd5e1;
+      --border-soft: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent: #1e40af;
+      --accent-soft: #eff6ff;
+      --accent-border: #93c5fd;
+      --pass-bg: #ecfdf5;
+      --pass-border: #6ee7b7;
+      --pass-text: #065f46;
+      --fail-bg: #fef2f2;
+      --fail-border: #fca5a5;
+      --fail-text: #991b1b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-app);
+      color: var(--text-main);
+      font-family: Tahoma, Arial, "Noto Sans Arabic", sans-serif;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--bg-toolbar);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      z-index: 20;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 10px;
+      border-right: 1px solid var(--border-soft);
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.2px;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .tabs {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      gap: 3px;
+    }
+
+    .tab-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: #e2e8f0;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--accent);
+      border-color: var(--border);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .btn:active {
+      background: #f1f5f9;
+    }
+
+    .btn-primary {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: #dbeafe;
+      border-color: #60a5fa;
+    }
+
+    .zoom-readout {
+      min-width: 52px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      padding: 0 4px;
+    }
+
+    .viewport-stage {
+      position: relative;
+      flex: 1 1 auto;
+      overflow: hidden;
+      background: var(--bg-stage);
+      background-image:
+        radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 20px 20px;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .viewport-stage.dragging {
+      cursor: grabbing;
+    }
+
+    .pan-zoom-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    .sheet-frame {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
+      line-height: 0;
+    }
+
+    .sheet-frame svg {
+      display: block;
+      width: 2100px;
+      height: 1485px;
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 16px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: 1px solid var(--pass-border);
+      background: var(--pass-bg);
+      color: var(--pass-text);
+    }
+
+    .status-pill.fail {
+      border-color: var(--fail-border);
+      background: var(--fail-bg);
+      color: var(--fail-text);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-meta {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .validation-drawer {
+      position: fixed;
+      right: 16px;
+      bottom: 48px;
+      width: min(640px, calc(100vw - 32px));
+      max-height: 68vh;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+      display: none;
+      flex-direction: column;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .validation-drawer.open {
+      display: flex;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .drawer-body {
+      padding: 10px 14px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 8px;
+      align-items: start;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .check-row:last-child {
+      border-bottom: none;
+    }
+
+    .check-idx {
+      font-weight: 700;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .check-name {
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    .check-detail {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .check-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .check-badge.pass {
+      background: var(--pass-bg);
+      color: var(--pass-text);
+      border: 1px solid var(--pass-border);
+    }
+
+    .check-badge.fail {
+      background: var(--fail-bg);
+      color: var(--fail-text);
+      border: 1px solid var(--fail-border);
+    }
+
+    .offscreen-measure {
+      position: fixed;
+      left: -99999px;
+      top: -99999px;
+      width: 2100px;
+      height: 1485px;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .toast {
+      position: fixed;
+      left: 16px;
+      bottom: 48px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.22);
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 60;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="toolbar">
+      <div class="toolbar-group">
+        <div class="brand">
+          <span class="brand-title">BPR Workflow Diagrams</span>
+          <span class="brand-tag">A3 Landscape</span>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Workflow Switcher">
+          <button id="tab-asis" class="tab-btn active" role="tab" aria-selected="true" data-workflow="ASIS">
+            As-Is Workflow (فرایند موجود)
+          </button>
+          <button id="tab-tobe" class="tab-btn" role="tab" aria-selected="false" data-workflow="TOBE">
+            To-Be Workflow (فرایند پیشنهادی)
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <button id="btn-fit" class="btn" title="Fit diagram to screen">Fit to Screen</button>
+        <button id="btn-zoom-out" class="btn" title="Zoom out">Zoom Out (-)</button>
+        <span id="zoom-readout" class="zoom-readout">100%</span>
+        <button id="btn-zoom-in" class="btn" title="Zoom in">Zoom In (+)</button>
+        <button id="btn-zoom-reset" class="btn" title="Reset zoom to 100%">Reset Zoom</button>
+      </div>
+
+      <div class="toolbar-group">
+        <button id="btn-export-svg" class="btn btn-primary" title="Export current diagram as SVG">Export SVG</button>
+        <button id="btn-export-png" class="btn btn-primary" title="Export current diagram as 300 DPI PNG">Export PNG</button>
+      </div>
+    </header>
+
+    <main id="viewport-stage" class="viewport-stage" aria-label="Diagram Viewport">
+      <div id="pan-zoom-layer" class="pan-zoom-layer">
+        <div id="sheet-frame" class="sheet-frame"></div>
+      </div>
+    </main>
+
+    <footer class="statusbar">
+      <div class="status-left">
+        <span id="validation-pill" class="status-pill">
+          <span class="status-dot"></span>
+          <span id="validation-summary">Validation: Checking...</span>
+        </span>
+        <span id="diagram-stats" class="status-meta"></span>
+        <span id="all-workflows-status" class="status-meta"></span>
+      </div>
+      <div class="toolbar-group">
+        <span class="status-meta">Drag to pan · Scroll to zoom</span>
+        <button id="btn-toggle-validation" class="btn">Validation Report</button>
+      </div>
+    </footer>
+  </div>
+
+  <aside id="validation-drawer" class="validation-drawer" aria-label="Validation Report">
+    <div class="drawer-header">
+      <span id="drawer-title">Structural &amp; Geometric Validation</span>
+      <button id="btn-close-drawer" class="btn">Close</button>
+    </div>
+    <div id="drawer-body" class="drawer-body"></div>
+  </aside>
+
+  <div id="offscreen-measure" class="offscreen-measure"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      const VIEW_W = 2100;
+      const VIEW_H = 1485;
+      const EXPORT_PNG_W = 4961;
+      const EXPORT_PNG_H = 3508;
+      const FONT_STACK = 'Tahoma, Arial, "Noto Sans Arabic", sans-serif';
+
+      const ROLE_STYLES = {
+        'Coordinator': { fill: '#EFF6FF', stroke: '#93C5FD', text: '#1E40AF' },
+        'Specialist':  { fill: '#F5F3FF', stroke: '#C4B5FD', text: '#5B21B6' },
+        'Advisor':     { fill: '#F0FDFA', stroke: '#99F6E4', text: '#115E59' },
+        'Engine':      { fill: '#F1F5F9', stroke: '#94A3B8', text: '#334155' },
+        'Case Owner':  { fill: '#FFF7ED', stroke: '#FDBA74', text: '#9A3412' }
+      };
+
+      // Authoritative structural manifests used for both rendering integrity and strict 12-point validation.
+      const AUTHORITATIVE_SPEC = {
+        ASIS: {
+          title: 'گردش‌کار فرایند موجود (As-Is)',
+          roles: ['Coordinator', 'Specialist', 'Advisor'],
+          nodes: [
+            { id: 'ASIS-S01',    type: 'start',   label: 'دریافت اعلان ثبت‌نام قطعی' },
+            { id: 'ASIS-END-01', type: 'end',     label: 'پایان موفق' },
+            { id: 'ASIS-END-02', type: 'end',     label: 'پایان مسیر پایه' },
+            { id: 'ASIS-A01',    type: 'activity', role: 'Coordinator', label: 'ثبت و کنترل اولیه پرونده' },
+            { id: 'ASIS-A02',    type: 'activity', role: 'Coordinator', label: 'پیگیری و رفع نقص با واحد ثبت‌نام' },
+            { id: 'ASIS-A03',    type: 'activity', role: 'Coordinator', label: 'ارسال بسته ارزیابی و هدف' },
+            { id: 'ASIS-A04',    type: 'activity', role: 'Coordinator', label: 'یادآوری دستی' },
+            { id: 'ASIS-A05',    type: 'activity', role: 'Coordinator', label: 'کنترل شکلی کامل‌بودن پاسخ‌ها' },
+            { id: 'ASIS-A06',    type: 'activity', role: 'Coordinator', label: 'درخواست تکمیل/ارسال مجدد' },
+            { id: 'ASIS-A07',    type: 'activity', role: 'Specialist',  label: 'تصحیح دستی و تجمیع نمرات' },
+            { id: 'ASIS-A08',    type: 'activity', role: 'Specialist',  label: 'تحلیل دستی شکاف و پیش‌نویس' },
+            { id: 'ASIS-A09',    type: 'activity', role: 'Advisor',     label: 'بازبینی تطبیق با اهداف' },
+            { id: 'ASIS-A10',    type: 'activity', role: 'Specialist',  label: 'اصلاح نمره/تحلیل' },
+            { id: 'ASIS-A11',    type: 'activity', role: 'Coordinator', label: 'تخصیص دستی در LMS و ارسال ایمیل' },
+            { id: 'ASIS-A12',    type: 'activity', role: 'Coordinator', label: 'مسیر پایه' },
+            { id: 'ASIS-G01',    type: 'gateway', label: 'اطلاعات اولیه کامل است؟' },
+            { id: 'ASIS-G02',    type: 'gateway', label: 'انتظار پاسخ / 72h' },
+            { id: 'ASIS-G03',    type: 'gateway', label: 'مهلت 48h' },
+            { id: 'ASIS-G04',    type: 'gateway', label: 'پاسخ‌ها کامل و قابل نمره‌دهی هستند؟' },
+            { id: 'ASIS-G05',    type: 'gateway', label: 'مسیر تأیید می‌شود؟' },
+            { id: 'ASIS-E01',    type: 'event',   label: 'دریافت پاسخ' },
+            { id: 'ASIS-E02',    type: 'event',   label: 'مهلت 72h' },
+            { id: 'ASIS-E03',    type: 'event',   label: 'پاسخ' },
+            { id: 'ASIS-E04',    type: 'event',   label: 'انقضا' },
+            { id: 'ASIS-MG01',   type: 'merge',   label: 'ASIS-MG01' },
+            { id: 'ASIS-MG02',   type: 'merge',   label: 'ASIS-MG02' },
+            { id: 'ASIS-MG03',   type: 'merge',   label: 'ASIS-MG03' },
+            { id: 'ASIS-MG04',   type: 'merge',   label: 'ASIS-MG04' }
+          ],
+          edges: [
+            { from: 'ASIS-S01',  to: 'ASIS-A01',    label: '' },
+            { from: 'ASIS-A01',  to: 'ASIS-G01',    label: '' },
+            { from: 'ASIS-G01',  to: 'ASIS-A02',    label: 'خیر - ناقص' },
+            { from: 'ASIS-G01',  to: 'ASIS-MG01',   label: 'بله - کامل' },
+            { from: 'ASIS-A02',  to: 'ASIS-MG01',   label: '' },
+            { from: 'ASIS-MG01', to: 'ASIS-A03',    label: '' },
+            { from: 'ASIS-A03',  to: 'ASIS-MG02',   label: '' },
+            { from: 'ASIS-MG02', to: 'ASIS-G02',    label: '' },
+            { from: 'ASIS-G02',  to: 'ASIS-E01',    label: 'دریافت پاسخ' },
+            { from: 'ASIS-G02',  to: 'ASIS-E02',    label: 'مهلت 72h' },
+            { from: 'ASIS-E01',  to: 'ASIS-MG03',   label: '' },
+            { from: 'ASIS-E02',  to: 'ASIS-A04',    label: '' },
+            { from: 'ASIS-A04',  to: 'ASIS-G03',    label: '' },
+            { from: 'ASIS-G03',  to: 'ASIS-E03',    label: 'پاسخ' },
+            { from: 'ASIS-G03',  to: 'ASIS-E04',    label: 'انقضای 48h' },
+            { from: 'ASIS-E03',  to: 'ASIS-MG03',   label: '' },
+            { from: 'ASIS-E04',  to: 'ASIS-A12',    label: '' },
+            { from: 'ASIS-A12',  to: 'ASIS-END-02', label: '' },
+            { from: 'ASIS-MG03', to: 'ASIS-A05',    label: '' },
+            { from: 'ASIS-A05',  to: 'ASIS-G04',    label: '' },
+            { from: 'ASIS-G04',  to: 'ASIS-A06',    label: 'خیر - ناقص' },
+            { from: 'ASIS-A06',  to: 'ASIS-MG02',   label: '' },
+            { from: 'ASIS-G04',  to: 'ASIS-A07',    label: 'بله - کامل' },
+            { from: 'ASIS-A07',  to: 'ASIS-A08',    label: '' },
+            { from: 'ASIS-A08',  to: 'ASIS-MG04',   label: '' },
+            { from: 'ASIS-MG04', to: 'ASIS-A09',    label: '' },
+            { from: 'ASIS-A09',  to: 'ASIS-G05',    label: '' },
+            { from: 'ASIS-G05',  to: 'ASIS-A10',    label: 'خیر - بازنگری' },
+            { from: 'ASIS-A10',  to: 'ASIS-MG04',   label: '' },
+            { from: 'ASIS-G05',  to: 'ASIS-A11',    label: 'بله - تأیید' },
+            { from: 'ASIS-A11',  to: 'ASIS-END-01', label: '' }
+          ]
+        },
+        TOBE: {
+          title: 'گردش‌کار فرایند پیشنهادی (To-Be)',
+          roles: ['Engine', 'Case Owner'],
+          nodes: [
+            { id: 'TOBE-S01',    type: 'start',   label: 'دریافت اعلان خودکار ثبت‌نام قطعی' },
+            { id: 'TOBE-END-01', type: 'end',     label: 'پایان موفق' },
+            { id: 'TOBE-END-02', type: 'end',     label: 'پایان مسیر پایه' },
+            { id: 'TOBE-A01',    type: 'activity', role: 'Engine',     label: 'همگام‌سازی و اعتبارسنجی خودکار پروفایل' },
+            { id: 'TOBE-A02',    type: 'activity', role: 'Case Owner', label: 'رفع مغایرت استثنایی' },
+            { id: 'TOBE-A03',    type: 'activity', role: 'Engine',     label: 'ایجاد و ارسال دعوت‌نامه پورتال تعاملی' },
+            { id: 'TOBE-A04',    type: 'activity', role: 'Engine',     label: 'یادآوری خودکار' },
+            { id: 'TOBE-A05',    type: 'activity', role: 'Engine',     label: 'نمره‌دهی خودکار و ماتریس شکاف' },
+            { id: 'TOBE-A06',    type: 'activity', role: 'Engine',     label: 'ارزیابی قواعد و سنجش قطعیت (Triage)' },
+            { id: 'TOBE-A07',    type: 'activity', role: 'Case Owner', label: 'تحلیل تخصصی و تنظیم مسیر' },
+            { id: 'TOBE-A08',    type: 'activity', role: 'Engine',     label: 'فعال‌سازی LMS و ارسال گزارش شکاف' },
+            { id: 'TOBE-A09',    type: 'activity', role: 'Case Owner', label: 'رسیدگی' },
+            { id: 'TOBE-A10',    type: 'activity', role: 'Engine',     label: 'تثبیت نهایی در سامانه، بستن پنجره و ابلاغ نهایی' },
+            { id: 'TOBE-A11',    type: 'activity', role: 'Engine',     label: 'مسیر پایه خودکار' },
+            { id: 'TOBE-G01',    type: 'gateway', label: 'داده معتبر است؟' },
+            { id: 'TOBE-G02',    type: 'gateway', label: 'بسته کامل یا مهلت 48h' },
+            { id: 'TOBE-G03',    type: 'gateway', label: 'تکمیل یا 48h' },
+            { id: 'TOBE-G04',    type: 'gateway', label: 'پروفایل شفاف (STP)؟' },
+            { id: 'TOBE-G05',    type: 'gateway', label: 'پنجره بازبینی 48h' },
+            { id: 'TOBE-E01',    type: 'event',   label: 'دریافت بسته' },
+            { id: 'TOBE-E02',    type: 'event',   label: '48h' },
+            { id: 'TOBE-E03',    type: 'event',   label: 'دریافت' },
+            { id: 'TOBE-E04',    type: 'event',   label: 'انقضا' },
+            { id: 'TOBE-E05',    type: 'event',   label: 'درخواست بازبینی' },
+            { id: 'TOBE-E06',    type: 'event',   label: 'انقضای 48h بدون اعتراض' },
+            { id: 'TOBE-MG01',   type: 'merge',   label: 'TOBE-MG01' },
+            { id: 'TOBE-MG02',   type: 'merge',   label: 'TOBE-MG02' },
+            { id: 'TOBE-MG03',   type: 'merge',   label: 'TOBE-MG03' },
+            { id: 'TOBE-MG04',   type: 'merge',   label: 'TOBE-MG04' }
+          ],
+          edges: [
+            { from: 'TOBE-S01',  to: 'TOBE-A01',    label: '' },
+            { from: 'TOBE-A01',  to: 'TOBE-G01',    label: '' },
+            { from: 'TOBE-G01',  to: 'TOBE-A02',    label: 'خیر - مغایرت' },
+            { from: 'TOBE-G01',  to: 'TOBE-MG01',   label: 'بله - معتبر' },
+            { from: 'TOBE-A02',  to: 'TOBE-MG01',   label: '' },
+            { from: 'TOBE-MG01', to: 'TOBE-A03',    label: '' },
+            { from: 'TOBE-A03',  to: 'TOBE-G02',    label: '' },
+            { from: 'TOBE-G02',  to: 'TOBE-E01',    label: 'دریافت بسته' },
+            { from: 'TOBE-G02',  to: 'TOBE-E02',    label: '48h' },
+            { from: 'TOBE-E01',  to: 'TOBE-MG02',   label: '' },
+            { from: 'TOBE-E02',  to: 'TOBE-A04',    label: '' },
+            { from: 'TOBE-A04',  to: 'TOBE-G03',    label: '' },
+            { from: 'TOBE-G03',  to: 'TOBE-E03',    label: 'دریافت' },
+            { from: 'TOBE-G03',  to: 'TOBE-E04',    label: 'انقضا' },
+            { from: 'TOBE-E03',  to: 'TOBE-MG02',   label: '' },
+            { from: 'TOBE-E04',  to: 'TOBE-A11',    label: '' },
+            { from: 'TOBE-A11',  to: 'TOBE-END-02', label: '' },
+            { from: 'TOBE-MG02', to: 'TOBE-A05',    label: '' },
+            { from: 'TOBE-A05',  to: 'TOBE-A06',    label: '' },
+            { from: 'TOBE-A06',  to: 'TOBE-G04',    label: '' },
+            { from: 'TOBE-G04',  to: 'TOBE-A07',    label: 'خیر - مرزی' },
+            { from: 'TOBE-G04',  to: 'TOBE-MG03',   label: 'بله - شفاف' },
+            { from: 'TOBE-A07',  to: 'TOBE-MG03',   label: '' },
+            { from: 'TOBE-MG03', to: 'TOBE-A08',    label: '' },
+            { from: 'TOBE-A08',  to: 'TOBE-G05',    label: '' },
+            { from: 'TOBE-G05',  to: 'TOBE-E06',    label: 'انقضای 48h بدون اعتراض' },
+            { from: 'TOBE-G05',  to: 'TOBE-E05',    label: 'درخواست بازبینی' },
+            { from: 'TOBE-E06',  to: 'TOBE-MG04',   label: '' },
+            { from: 'TOBE-E05',  to: 'TOBE-A09',    label: '' },
+            { from: 'TOBE-A09',  to: 'TOBE-MG04',   label: '' },
+            { from: 'TOBE-MG04', to: 'TOBE-A10',    label: '' },
+            { from: 'TOBE-A10',  to: 'TOBE-END-01', label: '' }
+          ]
+        }
+      };
+
+      // Deterministic, publication-grade RTL layout coordinates and orthogonal edge routing.
+      const WORKFLOW_DATA = {
+        ASIS: {
+          key: 'ASIS',
+          exportBaseName: 'AsIs_Workflow',
+          title: 'گردش‌کار فرایند موجود (As-Is)',
+          subtitle: 'نمای استاندارد گردش‌کار فرایند موجود — ۲۸ گره و ۳۱ اتصال (جهت خوانش: راست به چپ)',
+          roles: ['Coordinator', 'Specialist', 'Advisor'],
+          nodes: [
+            // Band 1 Spine (Right to Left, cy = 335)
+            {
+              id: 'ASIS-S01', type: 'start', cx: 1978, cy: 335, w: 144, h: 70,
+              label: 'دریافت اعلان ثبت‌نام قطعی',
+              lines: ['دریافت اعلان', 'ثبت‌نام قطعی']
+            },
+            {
+              id: 'ASIS-A01', type: 'activity', role: 'Coordinator', cx: 1785, cy: 335, w: 160, h: 90,
+              label: 'ثبت و کنترل اولیه پرونده',
+              lines: ['ثبت و کنترل', 'اولیه پرونده']
+            },
+            {
+              id: 'ASIS-G01', type: 'gateway', cx: 1580, cy: 335, w: 168, h: 114,
+              label: 'اطلاعات اولیه کامل است؟',
+              lines: ['اطلاعات اولیه', 'کامل است؟']
+            },
+            {
+              id: 'ASIS-MG01', type: 'merge', cx: 1398, cy: 335, w: 32, h: 32, idSide: 'top',
+              label: 'ASIS-MG01'
+            },
+            {
+              id: 'ASIS-A03', type: 'activity', role: 'Coordinator', cx: 1260, cy: 335, w: 160, h: 90,
+              label: 'ارسال بسته ارزیابی و هدف',
+              lines: ['ارسال بسته', 'ارزیابی و هدف']
+            },
+            {
+              id: 'ASIS-MG02', type: 'merge', cx: 1110, cy: 335, w: 32, h: 32, idSide: 'bottom',
+              label: 'ASIS-MG02'
+            },
+            {
+              id: 'ASIS-G02', type: 'gateway', cx: 965, cy: 335, w: 174, h: 114,
+              label: 'انتظار پاسخ / 72h',
+              lines: ['انتظار پاسخ / 72h']
+            },
+            {
+              id: 'ASIS-E01', type: 'event', eventKind: 'response', cx: 730, cy: 335, w: 130, h: 66,
+              label: 'دریافت پاسخ',
+              lines: ['دریافت پاسخ']
+            },
+            {
+              id: 'ASIS-MG03', type: 'merge', cx: 605, cy: 335, w: 32, h: 32, idSide: 'top',
+              label: 'ASIS-MG03'
+            },
+            {
+              id: 'ASIS-A05', type: 'activity', role: 'Coordinator', cx: 452, cy: 335, w: 170, h: 90,
+              label: 'کنترل شکلی کامل‌بودن پاسخ‌ها',
+              lines: ['کنترل شکلی', 'کامل‌بودن پاسخ‌ها']
+            },
+            {
+              id: 'ASIS-G04', type: 'gateway', cx: 226, cy: 335, w: 202, h: 128,
+              label: 'پاسخ‌ها کامل و قابل نمره‌دهی هستند؟',
+              lines: ['پاسخ‌ها کامل و', 'قابل نمره‌دهی هستند؟']
+            },
+
+            // Band 1 Upper Loop (cy = 186)
+            {
+              id: 'ASIS-A06', type: 'activity', role: 'Coordinator', cx: 630, cy: 186, w: 198, h: 88,
+              label: 'درخواست تکمیل/ارسال مجدد',
+              lines: ['درخواست تکمیل/ارسال مجدد']
+            },
+
+            // Band 1 Lower Sub-row 1 (cy = 555) + E03 (cy = 428)
+            {
+              id: 'ASIS-A02', type: 'activity', role: 'Coordinator', cx: 1580, cy: 555, w: 178, h: 92,
+              label: 'پیگیری و رفع نقص با واحد ثبت‌نام',
+              lines: ['پیگیری و رفع نقص', 'با واحد ثبت‌نام']
+            },
+            {
+              id: 'ASIS-E02', type: 'event', eventKind: 'timer', cx: 965, cy: 555, w: 120, h: 64,
+              label: 'مهلت 72h',
+              lines: ['مهلت 72h']
+            },
+            {
+              id: 'ASIS-A04', type: 'activity', role: 'Coordinator', cx: 794, cy: 555, w: 156, h: 86,
+              label: 'یادآوری دستی',
+              lines: ['یادآوری دستی']
+            },
+            {
+              id: 'ASIS-G03', type: 'gateway', cx: 605, cy: 555, w: 162, h: 110,
+              label: 'مهلت 48h',
+              lines: ['مهلت 48h']
+            },
+            {
+              id: 'ASIS-E03', type: 'event', eventKind: 'response', cx: 605, cy: 428, w: 118, h: 56,
+              label: 'پاسخ',
+              lines: ['پاسخ']
+            },
+
+            // Band 1 Lower Sub-row 2 (cy = 708)
+            {
+              id: 'ASIS-E04', type: 'event', eventKind: 'timer', cx: 605, cy: 708, w: 118, h: 58,
+              label: 'انقضا',
+              lines: ['انقضا']
+            },
+            {
+              id: 'ASIS-A12', type: 'activity', role: 'Coordinator', cx: 435, cy: 708, w: 156, h: 86,
+              label: 'مسیر پایه',
+              lines: ['مسیر پایه']
+            },
+            {
+              id: 'ASIS-END-02', type: 'end', endKind: 'fallback', cx: 235, cy: 708, w: 156, h: 70,
+              label: 'پایان مسیر پایه',
+              lines: ['پایان مسیر پایه']
+            },
+
+            // Band 2 Loop (cy = 942)
+            {
+              id: 'ASIS-A10', type: 'activity', role: 'Specialist', cx: 1145, cy: 942, w: 182, h: 88,
+              label: 'اصلاح نمره/تحلیل',
+              lines: ['اصلاح نمره/تحلیل']
+            },
+
+            // Band 2 Spine (Right to Left, cy = 1140)
+            {
+              id: 'ASIS-A07', type: 'activity', role: 'Specialist', cx: 1860, cy: 1140, w: 186, h: 90,
+              label: 'تصحیح دستی و تجمیع نمرات',
+              lines: ['تصحیح دستی', 'و تجمیع نمرات']
+            },
+            {
+              id: 'ASIS-A08', type: 'activity', role: 'Specialist', cx: 1585, cy: 1140, w: 186, h: 90,
+              label: 'تحلیل دستی شکاف و پیش‌نویس',
+              lines: ['تحلیل دستی', 'شکاف و پیش‌نویس']
+            },
+            {
+              id: 'ASIS-MG04', type: 'merge', cx: 1385, cy: 1140, w: 32, h: 32, idSide: 'bottom',
+              label: 'ASIS-MG04'
+            },
+            {
+              id: 'ASIS-A09', type: 'activity', role: 'Advisor', cx: 1170, cy: 1140, w: 178, h: 90,
+              label: 'بازبینی تطبیق با اهداف',
+              lines: ['بازبینی تطبیق', 'با اهداف']
+            },
+            {
+              id: 'ASIS-G05', type: 'gateway', cx: 905, cy: 1140, w: 168, h: 114,
+              label: 'مسیر تأیید می‌شود؟',
+              lines: ['مسیر تأیید', 'می‌شود؟']
+            },
+            {
+              id: 'ASIS-A11', type: 'activity', role: 'Coordinator', cx: 605, cy: 1140, w: 202, h: 92,
+              label: 'تخصیص دستی در LMS و ارسال ایمیل',
+              lines: ['تخصیص دستی در LMS', 'و ارسال ایمیل']
+            },
+            {
+              id: 'ASIS-END-01', type: 'end', endKind: 'success', cx: 305, cy: 1140, w: 156, h: 70,
+              label: 'پایان موفق',
+              lines: ['پایان موفق']
+            }
+          ],
+          edges: [
+            {
+              from: 'ASIS-S01', to: 'ASIS-A01', label: '',
+              points: [{ x: 1906, y: 335 }, { x: 1865, y: 335 }]
+            },
+            {
+              from: 'ASIS-A01', to: 'ASIS-G01', label: '',
+              points: [{ x: 1705, y: 335 }, { x: 1664, y: 335 }]
+            },
+            {
+              from: 'ASIS-G01', to: 'ASIS-A02', label: 'خیر - ناقص',
+              labelPos: { x: 1592, y: 450, anchor: 'start' },
+              points: [{ x: 1580, y: 392 }, { x: 1580, y: 509 }]
+            },
+            {
+              from: 'ASIS-G01', to: 'ASIS-MG01', label: 'بله - کامل',
+              labelPos: { x: 1455, y: 310, anchor: 'middle' },
+              points: [{ x: 1496, y: 335 }, { x: 1414, y: 335 }]
+            },
+            {
+              from: 'ASIS-A02', to: 'ASIS-MG01', label: '',
+              points: [{ x: 1491, y: 555 }, { x: 1398, y: 555 }, { x: 1398, y: 351 }]
+            },
+            {
+              from: 'ASIS-MG01', to: 'ASIS-A03', label: '',
+              points: [{ x: 1382, y: 335 }, { x: 1340, y: 335 }]
+            },
+            {
+              from: 'ASIS-A03', to: 'ASIS-MG02', label: '',
+              points: [{ x: 1180, y: 335 }, { x: 1126, y: 335 }]
+            },
+            {
+              from: 'ASIS-MG02', to: 'ASIS-G02', label: '',
+              points: [{ x: 1094, y: 335 }, { x: 1052, y: 335 }]
+            },
+            {
+              from: 'ASIS-G02', to: 'ASIS-E01', label: 'دریافت پاسخ',
+              labelPos: { x: 836, y: 310, anchor: 'middle' },
+              points: [{ x: 878, y: 335 }, { x: 795, y: 335 }]
+            },
+            {
+              from: 'ASIS-G02', to: 'ASIS-E02', label: 'مهلت 72h',
+              labelPos: { x: 977, y: 458, anchor: 'start' },
+              points: [{ x: 965, y: 392 }, { x: 965, y: 523 }]
+            },
+            {
+              from: 'ASIS-E01', to: 'ASIS-MG03', label: '',
+              points: [{ x: 665, y: 335 }, { x: 621, y: 335 }]
+            },
+            {
+              from: 'ASIS-E02', to: 'ASIS-A04', label: '',
+              points: [{ x: 905, y: 555 }, { x: 872, y: 555 }]
+            },
+            {
+              from: 'ASIS-A04', to: 'ASIS-G03', label: '',
+              points: [{ x: 716, y: 555 }, { x: 686, y: 555 }]
+            },
+            {
+              from: 'ASIS-G03', to: 'ASIS-E03', label: 'پاسخ',
+              labelPos: { x: 617, y: 480, anchor: 'start' },
+              points: [{ x: 605, y: 500 }, { x: 605, y: 456 }]
+            },
+            {
+              from: 'ASIS-G03', to: 'ASIS-E04', label: 'انقضای 48h',
+              labelPos: { x: 617, y: 644, anchor: 'start' },
+              points: [{ x: 605, y: 610 }, { x: 605, y: 679 }]
+            },
+            {
+              from: 'ASIS-E03', to: 'ASIS-MG03', label: '',
+              points: [{ x: 605, y: 400 }, { x: 605, y: 351 }]
+            },
+            {
+              from: 'ASIS-E04', to: 'ASIS-A12', label: '',
+              points: [{ x: 546, y: 708 }, { x: 513, y: 708 }]
+            },
+            {
+              from: 'ASIS-A12', to: 'ASIS-END-02', label: '',
+              points: [{ x: 357, y: 708 }, { x: 313, y: 708 }]
+            },
+            {
+              from: 'ASIS-MG03', to: 'ASIS-A05', label: '',
+              points: [{ x: 589, y: 335 }, { x: 537, y: 335 }]
+            },
+            {
+              from: 'ASIS-A05', to: 'ASIS-G04', label: '',
+              points: [{ x: 367, y: 335 }, { x: 327, y: 335 }]
+            },
+            {
+              from: 'ASIS-G04', to: 'ASIS-A06', label: 'خیر - ناقص', isLoop: true,
+              labelPos: { x: 238, y: 228, anchor: 'start' },
+              points: [{ x: 226, y: 271 }, { x: 226, y: 186 }, { x: 531, y: 186 }]
+            },
+            {
+              from: 'ASIS-A06', to: 'ASIS-MG02', label: '', isLoop: true,
+              points: [{ x: 729, y: 186 }, { x: 1110, y: 186 }, { x: 1110, y: 319 }]
+            },
+            {
+              from: 'ASIS-G04', to: 'ASIS-A07', label: 'بله - کامل',
+              labelPos: { x: 91, y: 310, anchor: 'middle' },
+              points: [
+                { x: 125, y: 335 },
+                { x: 58, y: 335 },
+                { x: 58, y: 805 },
+                { x: 2015, y: 805 },
+                { x: 2015, y: 1140 },
+                { x: 1953, y: 1140 }
+              ]
+            },
+            {
+              from: 'ASIS-A07', to: 'ASIS-A08', label: '',
+              points: [{ x: 1767, y: 1140 }, { x: 1678, y: 1140 }]
+            },
+            {
+              from: 'ASIS-A08', to: 'ASIS-MG04', label: '',
+              points: [{ x: 1492, y: 1140 }, { x: 1401, y: 1140 }]
+            },
+            {
+              from: 'ASIS-MG04', to: 'ASIS-A09', label: '',
+              points: [{ x: 1369, y: 1140 }, { x: 1259, y: 1140 }]
+            },
+            {
+              from: 'ASIS-A09', to: 'ASIS-G05', label: '',
+              points: [{ x: 1081, y: 1140 }, { x: 989, y: 1140 }]
+            },
+            {
+              from: 'ASIS-G05', to: 'ASIS-A10', label: 'خیر - بازنگری', isLoop: true,
+              labelPos: { x: 918, y: 1012, anchor: 'start' },
+              points: [{ x: 905, y: 1083 }, { x: 905, y: 942 }, { x: 1054, y: 942 }]
+            },
+            {
+              from: 'ASIS-A10', to: 'ASIS-MG04', label: '', isLoop: true,
+              points: [{ x: 1236, y: 942 }, { x: 1385, y: 942 }, { x: 1385, y: 1124 }]
+            },
+            {
+              from: 'ASIS-G05', to: 'ASIS-A11', label: 'بله - تأیید',
+              labelPos: { x: 764, y: 1114, anchor: 'middle' },
+              points: [{ x: 821, y: 1140 }, { x: 706, y: 1140 }]
+            },
+            {
+              from: 'ASIS-A11', to: 'ASIS-END-01', label: '',
+              points: [{ x: 504, y: 1140 }, { x: 383, y: 1140 }]
+            }
+          ]
+        },
+
+        TOBE: {
+          key: 'TOBE',
+          exportBaseName: 'ToBe_Workflow',
+          title: 'گردش‌کار فرایند پیشنهادی (To-Be)',
+          subtitle: 'نمای استاندارد گردش‌کار فرایند پیشنهادی — ۲۹ گره و ۳۲ اتصال (جهت خوانش: راست به چپ)',
+          roles: ['Engine', 'Case Owner'],
+          nodes: [
+            // Band 1 Spine (Right to Left, cy = 240)
+            {
+              id: 'TOBE-S01', type: 'start', cx: 1955, cy: 240, w: 162, h: 72,
+              label: 'دریافت اعلان خودکار ثبت‌نام قطعی',
+              lines: ['دریافت اعلان خودکار', 'ثبت‌نام قطعی']
+            },
+            {
+              id: 'TOBE-A01', type: 'activity', role: 'Engine', cx: 1730, cy: 240, w: 194, h: 92,
+              label: 'همگام‌سازی و اعتبارسنجی خودکار پروفایل',
+              lines: ['همگام‌سازی و اعتبارسنجی', 'خودکار پروفایل']
+            },
+            {
+              id: 'TOBE-G01', type: 'gateway', cx: 1505, cy: 240, w: 162, h: 110,
+              label: 'داده معتبر است؟',
+              lines: ['داده معتبر', 'است؟']
+            },
+            {
+              id: 'TOBE-MG01', type: 'merge', cx: 1318, cy: 240, w: 32, h: 32, idSide: 'top',
+              label: 'TOBE-MG01'
+            },
+            {
+              id: 'TOBE-A03', type: 'activity', role: 'Engine', cx: 1158, cy: 240, w: 192, h: 92,
+              label: 'ایجاد و ارسال دعوت‌نامه پورتال تعاملی',
+              lines: ['ایجاد و ارسال دعوت‌نامه', 'پورتال تعاملی']
+            },
+            {
+              id: 'TOBE-G02', type: 'gateway', cx: 940, cy: 240, w: 168, h: 114,
+              label: 'بسته کامل یا مهلت 48h',
+              lines: ['بسته کامل یا', 'مهلت 48h']
+            },
+            {
+              id: 'TOBE-E01', type: 'event', eventKind: 'response', cx: 710, cy: 240, w: 130, h: 66,
+              label: 'دریافت بسته',
+              lines: ['دریافت بسته']
+            },
+            {
+              id: 'TOBE-MG02', type: 'merge', cx: 565, cy: 240, w: 32, h: 32, idSide: 'top',
+              label: 'TOBE-MG02'
+            },
+
+            // Band 1 Lower Sub-row 1 (cy = 488) + E03 (cy = 352)
+            {
+              id: 'TOBE-A02', type: 'activity', role: 'Case Owner', cx: 1505, cy: 488, w: 178, h: 90,
+              label: 'رفع مغایرت استثنایی',
+              lines: ['رفع مغایرت', 'استثنایی']
+            },
+            {
+              id: 'TOBE-E02', type: 'event', eventKind: 'timer', cx: 940, cy: 488, w: 116, h: 62,
+              label: '48h',
+              lines: ['48h']
+            },
+            {
+              id: 'TOBE-A04', type: 'activity', role: 'Engine', cx: 762, cy: 488, w: 156, h: 86,
+              label: 'یادآوری خودکار',
+              lines: ['یادآوری خودکار']
+            },
+            {
+              id: 'TOBE-G03', type: 'gateway', cx: 565, cy: 488, w: 166, h: 112,
+              label: 'تکمیل یا 48h',
+              lines: ['تکمیل یا', '48h']
+            },
+            {
+              id: 'TOBE-E03', type: 'event', eventKind: 'response', cx: 565, cy: 352, w: 118, h: 58,
+              label: 'دریافت',
+              lines: ['دریافت']
+            },
+
+            // Band 1 Lower Sub-row 2 (cy = 645)
+            {
+              id: 'TOBE-E04', type: 'event', eventKind: 'timer', cx: 565, cy: 645, w: 118, h: 58,
+              label: 'انقضا',
+              lines: ['انقضا']
+            },
+            {
+              id: 'TOBE-A11', type: 'activity', role: 'Engine', cx: 382, cy: 645, w: 158, h: 86,
+              label: 'مسیر پایه خودکار',
+              lines: ['مسیر پایه خودکار']
+            },
+            {
+              id: 'TOBE-END-02', type: 'end', endKind: 'fallback', cx: 185, cy: 645, w: 152, h: 70,
+              label: 'پایان مسیر پایه',
+              lines: ['پایان مسیر پایه']
+            },
+
+            // Band 2 Spine (Right to Left, cy = 960)
+            {
+              id: 'TOBE-A05', type: 'activity', role: 'Engine', cx: 1895, cy: 960, w: 176, h: 90,
+              label: 'نمره‌دهی خودکار و ماتریس شکاف',
+              lines: ['نمره‌دهی خودکار', 'و ماتریس شکاف']
+            },
+            {
+              id: 'TOBE-A06', type: 'activity', role: 'Engine', cx: 1680, cy: 960, w: 186, h: 92,
+              label: 'ارزیابی قواعد و سنجش قطعیت (Triage)',
+              lines: ['ارزیابی قواعد و', 'سنجش قطعیت (Triage)']
+            },
+            {
+              id: 'TOBE-G04', type: 'gateway', cx: 1465, cy: 960, w: 170, h: 116,
+              label: 'پروفایل شفاف (STP)؟',
+              lines: ['پروفایل شفاف', '(STP)؟']
+            },
+            {
+              id: 'TOBE-MG03', type: 'merge', cx: 1280, cy: 960, w: 32, h: 32, idSide: 'top',
+              label: 'TOBE-MG03'
+            },
+            {
+              id: 'TOBE-A08', type: 'activity', role: 'Engine', cx: 1118, cy: 960, w: 184, h: 90,
+              label: 'فعال‌سازی LMS و ارسال گزارش شکاف',
+              lines: ['فعال‌سازی LMS و', 'ارسال گزارش شکاف']
+            },
+            {
+              id: 'TOBE-G05', type: 'gateway', cx: 900, cy: 960, w: 166, h: 114,
+              label: 'پنجره بازبینی 48h',
+              lines: ['پنجره بازبینی', '48h']
+            },
+            {
+              id: 'TOBE-E06', type: 'event', eventKind: 'timer', cx: 655, cy: 960, w: 146, h: 70,
+              label: 'انقضای 48h بدون اعتراض',
+              lines: ['انقضای 48h', 'بدون اعتراض']
+            },
+            {
+              id: 'TOBE-MG04', type: 'merge', cx: 512, cy: 960, w: 32, h: 32, idSide: 'top',
+              label: 'TOBE-MG04'
+            },
+            {
+              id: 'TOBE-A10', type: 'activity', role: 'Engine', cx: 355, cy: 960, w: 198, h: 96,
+              label: 'تثبیت نهایی در سامانه، بستن پنجره و ابلاغ نهایی',
+              lines: ['تثبیت نهایی در سامانه،', 'بستن پنجره و ابلاغ نهایی']
+            },
+            {
+              id: 'TOBE-END-01', type: 'end', endKind: 'success', cx: 145, cy: 960, w: 148, h: 70,
+              label: 'پایان موفق',
+              lines: ['پایان موفق']
+            },
+
+            // Band 2 Lower Exception Branches (cy = 1175)
+            {
+              id: 'TOBE-A07', type: 'activity', role: 'Case Owner', cx: 1465, cy: 1175, w: 182, h: 90,
+              label: 'تحلیل تخصصی و تنظیم مسیر',
+              lines: ['تحلیل تخصصی', 'و تنظیم مسیر']
+            },
+            {
+              id: 'TOBE-E05', type: 'event', eventKind: 'response', cx: 900, cy: 1175, w: 142, h: 66,
+              label: 'درخواست بازبینی',
+              lines: ['درخواست بازبینی']
+            },
+            {
+              id: 'TOBE-A09', type: 'activity', role: 'Case Owner', cx: 680, cy: 1175, w: 156, h: 86,
+              label: 'رسیدگی',
+              lines: ['رسیدگی']
+            }
+          ],
+          edges: [
+            {
+              from: 'TOBE-S01', to: 'TOBE-A01', label: '',
+              points: [{ x: 1874, y: 240 }, { x: 1827, y: 240 }]
+            },
+            {
+              from: 'TOBE-A01', to: 'TOBE-G01', label: '',
+              points: [{ x: 1633, y: 240 }, { x: 1586, y: 240 }]
+            },
+            {
+              from: 'TOBE-G01', to: 'TOBE-A02', label: 'خیر - مغایرت',
+              labelPos: { x: 1518, y: 369, anchor: 'start' },
+              points: [{ x: 1505, y: 295 }, { x: 1505, y: 443 }]
+            },
+            {
+              from: 'TOBE-G01', to: 'TOBE-MG01', label: 'بله - معتبر',
+              labelPos: { x: 1379, y: 215, anchor: 'middle' },
+              points: [{ x: 1424, y: 240 }, { x: 1334, y: 240 }]
+            },
+            {
+              from: 'TOBE-A02', to: 'TOBE-MG01', label: '',
+              points: [{ x: 1416, y: 488 }, { x: 1318, y: 488 }, { x: 1318, y: 256 }]
+            },
+            {
+              from: 'TOBE-MG01', to: 'TOBE-A03', label: '',
+              points: [{ x: 1302, y: 240 }, { x: 1254, y: 240 }]
+            },
+            {
+              from: 'TOBE-A03', to: 'TOBE-G02', label: '',
+              points: [{ x: 1062, y: 240 }, { x: 1024, y: 240 }]
+            },
+            {
+              from: 'TOBE-G02', to: 'TOBE-E01', label: 'دریافت بسته',
+              labelPos: { x: 815, y: 215, anchor: 'middle' },
+              points: [{ x: 856, y: 240 }, { x: 775, y: 240 }]
+            },
+            {
+              from: 'TOBE-G02', to: 'TOBE-E02', label: '48h',
+              labelPos: { x: 953, y: 377, anchor: 'start' },
+              points: [{ x: 940, y: 297 }, { x: 940, y: 457 }]
+            },
+            {
+              from: 'TOBE-E01', to: 'TOBE-MG02', label: '',
+              points: [{ x: 645, y: 240 }, { x: 581, y: 240 }]
+            },
+            {
+              from: 'TOBE-E02', to: 'TOBE-A04', label: '',
+              points: [{ x: 882, y: 488 }, { x: 840, y: 488 }]
+            },
+            {
+              from: 'TOBE-A04', to: 'TOBE-G03', label: '',
+              points: [{ x: 684, y: 488 }, { x: 648, y: 488 }]
+            },
+            {
+              from: 'TOBE-G03', to: 'TOBE-E03', label: 'دریافت',
+              labelPos: { x: 578, y: 407, anchor: 'start' },
+              points: [{ x: 565, y: 432 }, { x: 565, y: 381 }]
+            },
+            {
+              from: 'TOBE-G03', to: 'TOBE-E04', label: 'انقضا',
+              labelPos: { x: 578, y: 580, anchor: 'start' },
+              points: [{ x: 565, y: 544 }, { x: 565, y: 616 }]
+            },
+            {
+              from: 'TOBE-E03', to: 'TOBE-MG02', label: '',
+              points: [{ x: 565, y: 323 }, { x: 565, y: 256 }]
+            },
+            {
+              from: 'TOBE-E04', to: 'TOBE-A11', label: '',
+              points: [{ x: 506, y: 645 }, { x: 461, y: 645 }]
+            },
+            {
+              from: 'TOBE-A11', to: 'TOBE-END-02', label: '',
+              points: [{ x: 303, y: 645 }, { x: 261, y: 645 }]
+            },
+            {
+              from: 'TOBE-MG02', to: 'TOBE-A05', label: '',
+              points: [
+                { x: 549, y: 240 },
+                { x: 62, y: 240 },
+                { x: 62, y: 755 },
+                { x: 2032, y: 755 },
+                { x: 2032, y: 960 },
+                { x: 1983, y: 960 }
+              ]
+            },
+            {
+              from: 'TOBE-A05', to: 'TOBE-A06', label: '',
+              points: [{ x: 1807, y: 960 }, { x: 1773, y: 960 }]
+            },
+            {
+              from: 'TOBE-A06', to: 'TOBE-G04', label: '',
+              points: [{ x: 1587, y: 960 }, { x: 1550, y: 960 }]
+            },
+            {
+              from: 'TOBE-G04', to: 'TOBE-A07', label: 'خیر - مرزی',
+              labelPos: { x: 1478, y: 1074, anchor: 'start' },
+              points: [{ x: 1465, y: 1018 }, { x: 1465, y: 1130 }]
+            },
+            {
+              from: 'TOBE-G04', to: 'TOBE-MG03', label: 'بله - شفاف',
+              labelPos: { x: 1338, y: 935, anchor: 'middle' },
+              points: [{ x: 1380, y: 960 }, { x: 1296, y: 960 }]
+            },
+            {
+              from: 'TOBE-A07', to: 'TOBE-MG03', label: '',
+              points: [{ x: 1374, y: 1175 }, { x: 1280, y: 1175 }, { x: 1280, y: 976 }]
+            },
+            {
+              from: 'TOBE-MG03', to: 'TOBE-A08', label: '',
+              points: [{ x: 1264, y: 960 }, { x: 1210, y: 960 }]
+            },
+            {
+              from: 'TOBE-A08', to: 'TOBE-G05', label: '',
+              points: [{ x: 1026, y: 960 }, { x: 983, y: 960 }]
+            },
+            {
+              from: 'TOBE-G05', to: 'TOBE-E06',
+              label: 'انقضای 48h بدون اعتراض',
+              labelLines: ['انقضای 48h', 'بدون اعتراض'],
+              labelPos: { x: 772, y: 917, anchor: 'middle' },
+              points: [{ x: 817, y: 960 }, { x: 728, y: 960 }]
+            },
+            {
+              from: 'TOBE-G05', to: 'TOBE-E05', label: 'درخواست بازبینی',
+              labelPos: { x: 913, y: 1080, anchor: 'start' },
+              points: [{ x: 900, y: 1017 }, { x: 900, y: 1142 }]
+            },
+            {
+              from: 'TOBE-E06', to: 'TOBE-MG04', label: '',
+              points: [{ x: 582, y: 960 }, { x: 528, y: 960 }]
+            },
+            {
+              from: 'TOBE-E05', to: 'TOBE-A09', label: '',
+              points: [{ x: 829, y: 1175 }, { x: 758, y: 1175 }]
+            },
+            {
+              from: 'TOBE-A09', to: 'TOBE-MG04', label: '',
+              points: [{ x: 602, y: 1175 }, { x: 512, y: 1175 }, { x: 512, y: 976 }]
+            },
+            {
+              from: 'TOBE-MG04', to: 'TOBE-A10', label: '',
+              points: [{ x: 496, y: 960 }, { x: 454, y: 960 }]
+            },
+            {
+              from: 'TOBE-A10', to: 'TOBE-END-01', label: '',
+              points: [{ x: 256, y: 960 }, { x: 219, y: 960 }]
+            }
+          ]
+        }
+      };
+
+      const state = {
+        activeKey: 'ASIS',
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        dragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        panStartX: 0,
+        panStartY: 0,
+        validationResults: {}
+      };
+
+      const el = {
+        tabAsis: document.getElementById('tab-asis'),
+        tabTobe: document.getElementById('tab-tobe'),
+        btnFit: document.getElementById('btn-fit'),
+        btnZoomOut: document.getElementById('btn-zoom-out'),
+        btnZoomIn: document.getElementById('btn-zoom-in'),
+        btnZoomReset: document.getElementById('btn-zoom-reset'),
+        zoomReadout: document.getElementById('zoom-readout'),
+        btnExportSvg: document.getElementById('btn-export-svg'),
+        btnExportPng: document.getElementById('btn-export-png'),
+        stage: document.getElementById('viewport-stage'),
+        panZoomLayer: document.getElementById('pan-zoom-layer'),
+        sheetFrame: document.getElementById('sheet-frame'),
+        offscreen: document.getElementById('offscreen-measure'),
+        validationPill: document.getElementById('validation-pill'),
+        validationSummary: document.getElementById('validation-summary'),
+        diagramStats: document.getElementById('diagram-stats'),
+        allStatus: document.getElementById('all-workflows-status'),
+        btnToggleValidation: document.getElementById('btn-toggle-validation'),
+        drawer: document.getElementById('validation-drawer'),
+        drawerTitle: document.getElementById('drawer-title'),
+        drawerBody: document.getElementById('drawer-body'),
+        btnCloseDrawer: document.getElementById('btn-close-drawer'),
+        toast: document.getElementById('toast')
+      };
+
+      function svgEl(tag, attrs, textContent) {
+        const node = document.createElementNS(SVG_NS, tag);
+        if (attrs) {
+          for (const key of Object.keys(attrs)) {
+            if (attrs[key] !== undefined && attrs[key] !== null) {
+              node.setAttribute(key, String(attrs[key]));
+            }
+          }
+        }
+        if (textContent !== undefined && textContent !== null) {
+          node.textContent = textContent;
+        }
+        return node;
+      }
+
+      function buildOrthogonalPath(points, radius = 9) {
+        if (!points || points.length < 2) return '';
+        if (points.length === 2) {
+          return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+        }
+        let d = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 1; i < points.length - 1; i++) {
+          const prev = points[i - 1];
+          const curr = points[i];
+          const next = points[i + 1];
+          const dx1 = curr.x - prev.x;
+          const dy1 = curr.y - prev.y;
+          const len1 = Math.hypot(dx1, dy1);
+          const dx2 = next.x - curr.x;
+          const dy2 = next.y - curr.y;
+          const len2 = Math.hypot(dx2, dy2);
+          if (len1 === 0 || len2 === 0) {
+            d += ` L ${curr.x} ${curr.y}`;
+            continue;
+          }
+          const r = Math.min(radius, len1 * 0.45, len2 * 0.45);
+          const ax = curr.x - (dx1 / len1) * r;
+          const ay = curr.y - (dy1 / len1) * r;
+          const bx = curr.x + (dx2 / len2) * r;
+          const by = curr.y + (dy2 / len2) * r;
+          d += ` L ${ax.toFixed(2)} ${ay.toFixed(2)} Q ${curr.x} ${curr.y} ${bx.toFixed(2)} ${by.toFixed(2)}`;
+        }
+        const last = points[points.length - 1];
+        d += ` L ${last.x} ${last.y}`;
+        return d;
+      }
+
+      function createMultilineText(lines, x, centerY, lineHeight, attrs) {
+        const text = svgEl('text', Object.assign({
+          x: x,
+          y: centerY,
+          'text-anchor': 'middle',
+          'direction': 'rtl',
+          'unicode-bidi': 'embed',
+          'lang': 'fa',
+          'font-family': FONT_STACK
+        }, attrs));
+
+        const count = lines.length;
+        const startY = centerY - ((count - 1) * lineHeight) / 2;
+        lines.forEach((line, idx) => {
+          const tspan = svgEl('tspan', {
+            x: x,
+            y: (startY + idx * lineHeight).toFixed(2),
+            'dominant-baseline': 'central',
+            'direction': 'rtl',
+            'unicode-bidi': 'embed'
+          }, line);
+          text.appendChild(tspan);
+        });
+        return text;
+      }
+
+      function renderEventGlyph(kind, cx, cy) {
+        const g = svgEl('g', { 'aria-hidden': 'true' });
+        if (kind === 'timer') {
+          g.appendChild(svgEl('circle', {
+            cx: cx, cy: cy, r: 5.2,
+            fill: 'none', stroke: '#0369A1', 'stroke-width': 1.25
+          }));
+          g.appendChild(svgEl('path', {
+            d: `M ${cx} ${cy - 3} L ${cx} ${cy} L ${cx + 2.5} ${cy + 1.4}`,
+            fill: 'none', stroke: '#0369A1', 'stroke-width': 1.2, 'stroke-linecap': 'round'
+          }));
+        } else {
+          g.appendChild(svgEl('rect', {
+            x: cx - 5.5, y: cy - 3.8, width: 11, height: 7.6, rx: 1.2,
+            fill: 'none', stroke: '#0369A1', 'stroke-width': 1.2
+          }));
+          g.appendChild(svgEl('path', {
+            d: `M ${cx - 5.2} ${cy - 3.4} L ${cx} ${cy + 0.8} L ${cx + 5.2} ${cy - 3.4}`,
+            fill: 'none', stroke: '#0369A1', 'stroke-width': 1.15, 'stroke-linejoin': 'round'
+          }));
+        }
+        return g;
+      }
+
+      function renderNode(node) {
+        const g = svgEl('g', {
+          class: 'wf-node',
+          'data-node-id': node.id,
+          'data-node-type': node.type
+        });
+
+        const x = node.cx - node.w / 2;
+        const y = node.cy - node.h / 2;
+
+        if (node.type === 'start') {
+          g.appendChild(svgEl('rect', {
+            x: x, y: y, width: node.w, height: node.h, rx: node.h / 2, ry: node.h / 2,
+            fill: '#F0FDF4', stroke: '#15803D', 'stroke-width': 2.2
+          }));
+          g.appendChild(svgEl('rect', {
+            x: node.cx - 38, y: y + 7, width: 76, height: 17, rx: 8.5,
+            fill: '#DCFCE7', stroke: '#86EFAC', 'stroke-width': 1
+          }));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: node.cx, y: y + 15.5,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.5, 'font-weight': 700,
+            fill: '#166534'
+          }, node.id));
+          const lbl = createMultilineText(node.lines, node.cx, node.cy + 12, 16, {
+            class: 'wf-node-text wf-node-label',
+            'font-size': 11.5, 'font-weight': 700, fill: '#0F172A'
+          });
+          g.appendChild(lbl);
+        } else if (node.type === 'end') {
+          const isFallback = node.endKind === 'fallback';
+          const outerFill = isFallback ? '#FFF7ED' : '#ECFDF5';
+          const outerStroke = isFallback ? '#B45309' : '#047857';
+          const innerStroke = isFallback ? '#D97706' : '#10B981';
+          const idColor = isFallback ? '#9A3412' : '#065F46';
+          const textColor = isFallback ? '#7C2D12' : '#064E3B';
+
+          g.appendChild(svgEl('rect', {
+            x: x, y: y, width: node.w, height: node.h, rx: node.h / 2, ry: node.h / 2,
+            fill: outerFill, stroke: outerStroke, 'stroke-width': 2.4
+          }));
+          g.appendChild(svgEl('rect', {
+            x: x + 4.5, y: y + 4.5, width: node.w - 9, height: node.h - 9,
+            rx: (node.h - 9) / 2, ry: (node.h - 9) / 2,
+            fill: 'none', stroke: innerStroke, 'stroke-width': 1.3,
+            'stroke-dasharray': isFallback ? '5 3' : null
+          }));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: node.cx, y: y + 20,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.5, 'font-weight': 700,
+            fill: idColor
+          }, node.id));
+          const lbl = createMultilineText(node.lines, node.cx, node.cy + 11, 16, {
+            class: 'wf-node-text wf-node-label',
+            'font-size': 12.5, 'font-weight': 700, fill: textColor
+          });
+          g.appendChild(lbl);
+        } else if (node.type === 'activity') {
+          const roleStyle = ROLE_STYLES[node.role];
+          g.appendChild(svgEl('rect', {
+            x: x, y: y, width: node.w, height: node.h, rx: 10, ry: 10,
+            fill: '#FFFFFF', stroke: '#334155', 'stroke-width': 1.8
+          }));
+          g.appendChild(svgEl('path', {
+            d: `M ${x + 1} ${y + 27} L ${x + node.w - 1} ${y + 27}`,
+            stroke: '#E2E8F0', 'stroke-width': 1.1
+          }));
+
+          // Node ID on top-left of card header
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: x + 10, y: y + 14.5,
+            'text-anchor': 'start', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.5, 'font-weight': 700,
+            fill: '#334155'
+          }, node.id));
+
+          // Role badge on top-right of card header
+          const badgeW = Math.max(54, node.role.length * 6.3 + 14);
+          const badgeX = x + node.w - badgeW - 8;
+          const badgeY = y + 6;
+          g.appendChild(svgEl('rect', {
+            x: badgeX, y: badgeY, width: badgeW, height: 17, rx: 4,
+            fill: roleStyle.fill, stroke: roleStyle.stroke, 'stroke-width': 1
+          }));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-role',
+            x: badgeX + badgeW / 2, y: badgeY + 8.5,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9, 'font-weight': 700,
+            fill: roleStyle.text
+          }, node.role));
+
+          const lbl = createMultilineText(node.lines, node.cx, node.cy + 13, 18, {
+            class: 'wf-node-text wf-node-label',
+            'font-size': 12, 'font-weight': 600, fill: '#0F172A'
+          });
+          g.appendChild(lbl);
+        } else if (node.type === 'gateway') {
+          const hw = node.w / 2;
+          const hh = node.h / 2;
+          const pts = [
+            `${node.cx},${node.cy - hh}`,
+            `${node.cx + hw},${node.cy}`,
+            `${node.cx},${node.cy + hh}`,
+            `${node.cx - hw},${node.cy}`
+          ].join(' ');
+          g.appendChild(svgEl('polygon', {
+            points: pts,
+            fill: '#FEFCE8', stroke: '#A16207', 'stroke-width': 2
+          }));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: node.cx, y: node.cy - hh * 0.42,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.2, 'font-weight': 700,
+            fill: '#854D0E'
+          }, node.id));
+          const labelY = node.lines.length === 1 ? node.cy + 9 : node.cy + 10;
+          const lbl = createMultilineText(node.lines, node.cx, labelY, 16, {
+            class: 'wf-node-text wf-node-label',
+            'font-size': 11.2, 'font-weight': 700, fill: '#1E293B'
+          });
+          g.appendChild(lbl);
+        } else if (node.type === 'event') {
+          const hw = node.w / 2;
+          const hh = node.h / 2;
+          const c = 11;
+          const pts = [
+            `${node.cx - hw + c},${node.cy - hh}`,
+            `${node.cx + hw - c},${node.cy - hh}`,
+            `${node.cx + hw},${node.cy - hh + c}`,
+            `${node.cx + hw},${node.cy + hh - c}`,
+            `${node.cx + hw - c},${node.cy + hh}`,
+            `${node.cx - hw + c},${node.cy + hh}`,
+            `${node.cx - hw},${node.cy + hh - c}`,
+            `${node.cx - hw},${node.cy - hh + c}`
+          ].join(' ');
+          g.appendChild(svgEl('polygon', {
+            points: pts,
+            fill: '#F0F9FF', stroke: '#0369A1', 'stroke-width': 1.9
+          }));
+          g.appendChild(renderEventGlyph(node.eventKind, node.cx - 32, y + 14.5));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: node.cx + 8, y: y + 14.5,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.2, 'font-weight': 700,
+            fill: '#0369A1'
+          }, node.id));
+          const lbl = createMultilineText(node.lines, node.cx, node.cy + 10, 15, {
+            class: 'wf-node-text wf-node-label',
+            'font-size': 11.3, 'font-weight': 700, fill: '#0F172A'
+          });
+          g.appendChild(lbl);
+        } else if (node.type === 'merge') {
+          g.appendChild(svgEl('circle', {
+            cx: node.cx, cy: node.cy, r: 16,
+            fill: '#E2E8F0', stroke: '#334155', 'stroke-width': 2
+          }));
+          g.appendChild(svgEl('circle', {
+            cx: node.cx, cy: node.cy, r: 4.5,
+            fill: '#334155'
+          }));
+          const pillW = 78;
+          const pillH = 18;
+          const pillY = node.idSide === 'bottom' ? node.cy + 20 : node.cy - 20 - pillH;
+          g.appendChild(svgEl('rect', {
+            class: 'wf-merge-pill',
+            x: node.cx - pillW / 2, y: pillY, width: pillW, height: pillH, rx: 4,
+            fill: '#FFFFFF', stroke: '#CBD5E1', 'stroke-width': 1
+          }));
+          g.appendChild(svgEl('text', {
+            class: 'wf-node-text wf-node-id',
+            x: node.cx, y: pillY + pillH / 2,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 9.2, 'font-weight': 700,
+            fill: '#334155'
+          }, node.id));
+        }
+
+        return g;
+      }
+
+      function renderEdge(edge) {
+        const g = svgEl('g', {
+          class: 'wf-edge',
+          'data-from': edge.from,
+          'data-to': edge.to
+        });
+
+        const pathD = buildOrthogonalPath(edge.points, 9);
+        const pathAttrs = {
+          class: 'wf-edge-path',
+          d: pathD,
+          fill: 'none',
+          stroke: edge.isLoop ? '#1E40AF' : '#475569',
+          'stroke-width': edge.isLoop ? 1.9 : 1.85,
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'marker-end': edge.isLoop ? 'url(#wf-arrow-loop)' : 'url(#wf-arrow-main)'
+        };
+        if (edge.isLoop) {
+          pathAttrs['stroke-dasharray'] = '6 4';
+        }
+        g.appendChild(svgEl('path', pathAttrs));
+
+        if (edge.label && edge.labelPos) {
+          const lines = edge.labelLines || [edge.label];
+          const lp = edge.labelPos;
+          const maxChars = Math.max(...lines.map(l => l.length));
+          const pillW = Math.max(40, maxChars * 6.1 + 14);
+          const pillH = lines.length === 1 ? 20 : 34;
+          let rectX = lp.x - pillW / 2;
+          if (lp.anchor === 'start') rectX = lp.x - 4;
+          if (lp.anchor === 'end') rectX = lp.x - pillW + 4;
+          const rectY = lp.y - pillH / 2;
+
+          const labelG = svgEl('g', { class: 'wf-branch-label' });
+          labelG.appendChild(svgEl('rect', {
+            x: rectX.toFixed(1), y: rectY.toFixed(1),
+            width: pillW.toFixed(1), height: pillH, rx: 4,
+            fill: '#FFFFFF', stroke: edge.isLoop ? '#93C5FD' : '#CBD5E1', 'stroke-width': 1
+          }));
+
+          const textX = rectX + pillW / 2;
+          const text = createMultilineText(lines, textX, lp.y, 14.5, {
+            'font-size': 10.5, 'font-weight': 700,
+            fill: edge.isLoop ? '#1E40AF' : '#1E293B'
+          });
+          labelG.appendChild(text);
+          g.appendChild(labelG);
+        }
+
+        return g;
+      }
+
+      function renderLegend(workflow) {
+        const g = svgEl('g', { class: 'wf-legend' });
+        const boxX = 48;
+        const boxY = 1344;
+        const boxW = 2004;
+        const boxH = 98;
+
+        g.appendChild(svgEl('rect', {
+          x: boxX, y: boxY, width: boxW, height: boxH, rx: 8,
+          fill: '#F8FAFC', stroke: '#CBD5E1', 'stroke-width': 1.2
+        }));
+
+        // Legend title (Right side, RTL)
+        g.appendChild(svgEl('text', {
+          x: 2026, y: boxY + 24,
+          'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 12.5, 'font-weight': 700, fill: '#0F172A'
+        }, 'راهنمای نمادها و نقش‌ها:'));
+
+        // Shape legend items (Right-to-left arrangement along top row of legend)
+        // 1. Start
+        g.appendChild(svgEl('rect', {
+          x: 1790, y: boxY + 14, width: 38, height: 20, rx: 10,
+          fill: '#F0FDF4', stroke: '#15803D', 'stroke-width': 1.8
+        }));
+        g.appendChild(svgEl('text', {
+          x: 1780, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'نقطه شروع'));
+
+        // 2. Activity
+        g.appendChild(svgEl('rect', {
+          x: 1615, y: boxY + 14, width: 38, height: 20, rx: 4,
+          fill: '#FFFFFF', stroke: '#334155', 'stroke-width': 1.6
+        }));
+        g.appendChild(svgEl('text', {
+          x: 1605, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'فعالیت'));
+
+        // 3. Gateway
+        g.appendChild(svgEl('polygon', {
+          points: `1452,${boxY + 12} 1472,${boxY + 24} 1452,${boxY + 36} 1432,${boxY + 24}`,
+          fill: '#FEFCE8', stroke: '#A16207', 'stroke-width': 1.7
+        }));
+        g.appendChild(svgEl('text', {
+          x: 1422, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'تصمیم / انشعاب'));
+
+        // 4. Event
+        g.appendChild(svgEl('polygon', {
+          points: `1238,${boxY + 14} 1266,${boxY + 14} 1272,${boxY + 20} 1272,${boxY + 28} 1266,${boxY + 34} 1238,${boxY + 34} 1232,${boxY + 28} 1232,${boxY + 20}`,
+          fill: '#F0F9FF', stroke: '#0369A1', 'stroke-width': 1.6
+        }));
+        g.appendChild(svgEl('text', {
+          x: 1222, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'رویداد پاسخ / مهلت'));
+
+        // 5. Merge
+        g.appendChild(svgEl('circle', {
+          cx: 1058, cy: boxY + 24, r: 10,
+          fill: '#E2E8F0', stroke: '#334155', 'stroke-width': 1.7
+        }));
+        g.appendChild(svgEl('circle', {
+          cx: 1058, cy: boxY + 24, r: 3, fill: '#334155'
+        }));
+        g.appendChild(svgEl('text', {
+          x: 1038, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'نقطه ادغام (Merge)'));
+
+        // 6. Normal End
+        g.appendChild(svgEl('rect', {
+          x: 840, y: boxY + 14, width: 38, height: 20, rx: 10,
+          fill: '#ECFDF5', stroke: '#047857', 'stroke-width': 2
+        }));
+        g.appendChild(svgEl('rect', {
+          x: 843, y: boxY + 17, width: 32, height: 14, rx: 7,
+          fill: 'none', stroke: '#10B981', 'stroke-width': 1.1
+        }));
+        g.appendChild(svgEl('text', {
+          x: 830, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'پایان موفق'));
+
+        // 7. Fallback End
+        g.appendChild(svgEl('rect', {
+          x: 660, y: boxY + 14, width: 38, height: 20, rx: 10,
+          fill: '#FFF7ED', stroke: '#B45309', 'stroke-width': 2
+        }));
+        g.appendChild(svgEl('rect', {
+          x: 663, y: boxY + 17, width: 32, height: 14, rx: 7,
+          fill: 'none', stroke: '#D97706', 'stroke-width': 1.1, 'stroke-dasharray': '3 2'
+        }));
+        g.appendChild(svgEl('text', {
+          x: 650, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'پایان مسیر پایه'));
+
+        // 8. Flow / Loop line legend
+        g.appendChild(svgEl('path', {
+          d: `M 476 ${boxY + 24} L 434 ${boxY + 24}`,
+          stroke: '#475569', 'stroke-width': 1.8, 'marker-end': 'url(#wf-arrow-main)'
+        }));
+        g.appendChild(svgEl('text', {
+          x: 422, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#334155'
+        }, 'جریان اصلی'));
+
+        if (workflow.key === 'ASIS') {
+          g.appendChild(svgEl('path', {
+            d: `M 284 ${boxY + 24} L 242 ${boxY + 24}`,
+            stroke: '#1E40AF', 'stroke-width': 1.8, 'stroke-dasharray': '5 3',
+            'marker-end': 'url(#wf-arrow-loop)'
+          }));
+          g.appendChild(svgEl('text', {
+            x: 230, y: boxY + 24, 'text-anchor': 'start', 'dominant-baseline': 'central',
+            'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+            'font-family': FONT_STACK, 'font-size': 11, fill: '#1E40AF'
+          }, 'حلقه بازگشت / اصلاح'));
+        }
+
+        // Divider inside legend
+        g.appendChild(svgEl('line', {
+          x1: boxX + 18, y1: boxY + 50, x2: boxX + boxW - 18, y2: boxY + 50,
+          stroke: '#E2E8F0', 'stroke-width': 1
+        }));
+
+        // Bottom row: Roles assigned ONLY on Activity nodes + Reading direction note
+        g.appendChild(svgEl('text', {
+          x: 2026, y: boxY + 73,
+          'text-anchor': 'start', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11.5, 'font-weight': 700, fill: '#334155'
+        }, 'برچسب نقش‌ها (فقط بر روی گره‌های فعالیت):'));
+
+        let cursorX = 1660;
+        workflow.roles.forEach(role => {
+          const rs = ROLE_STYLES[role];
+          const w = Math.max(80, role.length * 6.8 + 20);
+          g.appendChild(svgEl('rect', {
+            x: cursorX - w, y: boxY + 62, width: w, height: 22, rx: 5,
+            fill: rs.fill, stroke: rs.stroke, 'stroke-width': 1.1
+          }));
+          g.appendChild(svgEl('text', {
+            x: cursorX - w / 2, y: boxY + 73,
+            'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'direction': 'ltr', 'unicode-bidi': 'embed',
+            'font-family': FONT_STACK, 'font-size': 10.5, 'font-weight': 700, fill: rs.text
+          }, role));
+          cursorX -= (w + 18);
+        });
+
+        g.appendChild(svgEl('text', {
+          x: 74, y: boxY + 73,
+          'text-anchor': 'end', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 11, fill: '#64748B'
+        }, 'جهت پیشرفت فرایند: راست به چپ · هر دو مسیر پایان موفق و مسیر پایه کاملاً تفکیک شده‌اند.'));
+
+        return g;
+      }
+
+      function buildWorkflowSVG(workflow) {
+        const svg = svgEl('svg', {
+          id: 'workflow-svg',
+          xmlns: SVG_NS,
+          'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+          viewBox: `0 0 ${VIEW_W} ${VIEW_H}`,
+          width: '420mm',
+          height: '297mm',
+          'data-workflow-key': workflow.key
+        });
+
+        const defs = svgEl('defs');
+        const styleEl = svgEl('style', { type: 'text/css' }, `
+          svg { font-family: ${FONT_STACK}; }
+          text { font-family: ${FONT_STACK}; }
+        `);
+        defs.appendChild(styleEl);
+
+        const mkMain = svgEl('marker', {
+          id: 'wf-arrow-main', viewBox: '0 0 10 10', refX: 8.8, refY: 5,
+          markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse'
+        });
+        mkMain.appendChild(svgEl('path', { d: 'M 0 1.2 L 9.5 5 L 0 8.8 z', fill: '#475569' }));
+        defs.appendChild(mkMain);
+
+        const mkLoop = svgEl('marker', {
+          id: 'wf-arrow-loop', viewBox: '0 0 10 10', refX: 8.8, refY: 5,
+          markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse'
+        });
+        mkLoop.appendChild(svgEl('path', { d: 'M 0 1.2 L 9.5 5 L 0 8.8 z', fill: '#1E40AF' }));
+        defs.appendChild(mkLoop);
+
+        svg.appendChild(defs);
+
+        // Guaranteed opaque white sheet background for standalone SVG & PNG export
+        svg.appendChild(svgEl('rect', {
+          x: 0, y: 0, width: VIEW_W, height: VIEW_H, fill: '#FFFFFF'
+        }));
+
+        // Outer academic frame
+        svg.appendChild(svgEl('rect', {
+          x: 24, y: 20, width: VIEW_W - 48, height: VIEW_H - 40, rx: 8,
+          fill: 'none', stroke: '#CBD5E1', 'stroke-width': 1.2
+        }));
+
+        // Title Block
+        svg.appendChild(svgEl('text', {
+          x: 1050, y: 56,
+          'text-anchor': 'middle', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 24, 'font-weight': 700, fill: '#0F172A'
+        }, workflow.title));
+
+        svg.appendChild(svgEl('text', {
+          x: 1050, y: 86,
+          'text-anchor': 'middle', 'dominant-baseline': 'central',
+          'direction': 'rtl', 'unicode-bidi': 'embed', 'lang': 'fa',
+          'font-family': FONT_STACK, 'font-size': 12.5, fill: '#475569'
+        }, workflow.subtitle));
+
+        svg.appendChild(svgEl('line', {
+          x1: 56, y1: 108, x2: VIEW_W - 56, y2: 108,
+          stroke: '#E2E8F0', 'stroke-width': 1.2
+        }));
+
+        // Edges layer behind nodes
+        const edgesLayer = svgEl('g', { id: 'layer-edges' });
+        workflow.edges.forEach(edge => {
+          edgesLayer.appendChild(renderEdge(edge));
+        });
+        svg.appendChild(edgesLayer);
+
+        // Nodes layer
+        const nodesLayer = svgEl('g', { id: 'layer-nodes' });
+        workflow.nodes.forEach(node => {
+          nodesLayer.appendChild(renderNode(node));
+        });
+        svg.appendChild(nodesLayer);
+
+        // Legend
+        svg.appendChild(renderLegend(workflow));
+
+        return svg;
+      }
+
+      // Ensures zero clipping regardless of local system font metrics before validation runs.
+      function ensureTextFitsInNodes(svgRoot, workflow) {
+        const nodeMap = new Map(workflow.nodes.map(n => [n.id, n]));
+        const nodeGroups = svgRoot.querySelectorAll('.wf-node');
+        nodeGroups.forEach(g => {
+          const id = g.getAttribute('data-node-id');
+          const node = nodeMap.get(id);
+          if (!node) return;
+          const labelEl = g.querySelector('.wf-node-label');
+          if (!labelEl) return;
+
+          let safeW = node.w - 14;
+          if (node.type === 'start' || node.type === 'end') safeW = node.w - 22;
+          if (node.type === 'gateway') safeW = node.w * 0.62;
+          if (node.type === 'event') safeW = node.w - 24;
+
+          let size = parseFloat(labelEl.getAttribute('font-size') || '12');
+          let bbox = labelEl.getBBox();
+          while (bbox.width > safeW && size > 9) {
+            size -= 0.5;
+            labelEl.setAttribute('font-size', size.toFixed(1));
+            bbox = labelEl.getBBox();
+          }
+        });
+      }
+
+      function validateTextInsideNodeBoundary(node, nodeGroup) {
+        const textEls = nodeGroup.querySelectorAll('.wf-node-text');
+        const failures = [];
+
+        for (const t of textEls) {
+          const b = t.getBBox();
+          if (node.type === 'merge') {
+            const pill = nodeGroup.querySelector('.wf-merge-pill');
+            const pb = pill.getBBox();
+            if (b.x < pb.x + 1 || b.x + b.width > pb.x + pb.width - 1 ||
+                b.y < pb.y + 0.5 || b.y + b.height > pb.y + pb.height - 0.5) {
+              failures.push(`${node.id} (merge badge overflow)`);
+            }
+            continue;
+          }
+
+          if (node.type === 'gateway') {
+            const hw = node.w / 2;
+            const hh = node.h / 2;
+            const yTop = b.y;
+            const yBot = b.y + b.height;
+            const allowTop = hw * (1 - Math.abs(yTop - node.cy) / hh) - 2;
+            const allowBot = hw * (1 - Math.abs(yBot - node.cy) / hh) - 2;
+            const minAllow = Math.min(allowTop, allowBot);
+            if (b.x < node.cx - minAllow || b.x + b.width > node.cx + minAllow ||
+                yTop < node.cy - hh + 2 || yBot > node.cy + hh - 2) {
+              failures.push(`${node.id} (diamond text boundary)`);
+            }
+            continue;
+          }
+
+          const nx = node.cx - node.w / 2;
+          const ny = node.cy - node.h / 2;
+          if (b.x < nx + 2 || b.x + b.width > nx + node.w - 2 ||
+              b.y < ny + 1 || b.y + b.height > ny + node.h - 1) {
+            failures.push(`${node.id} (box text boundary)`);
+          }
+        }
+        return failures;
+      }
+
+      function validateWorkflow(key, renderedSvg) {
+        const wf = WORKFLOW_DATA[key];
+        const spec = AUTHORITATIVE_SPEC[key];
+        const checks = [];
+
+        // 1. Unique node IDs
+        const idCounts = new Map();
+        wf.nodes.forEach(n => idCounts.set(n.id, (idCounts.get(n.id) || 0) + 1));
+        const dupIds = [...idCounts.entries()].filter(([, c]) => c > 1).map(([id]) => id);
+        checks.push({
+          idx: 1,
+          name: 'Every node ID is unique within its diagram',
+          pass: dupIds.length === 0,
+          detail: dupIds.length === 0 ? `${wf.nodes.length} unique IDs verified` : `Duplicates: ${dupIds.join(', ')}`
+        });
+
+        const nodeMap = new Map(wf.nodes.map(n => [n.id, n]));
+
+        // 2. Every edge references an existing source node
+        const badSrc = wf.edges.filter(e => !nodeMap.has(e.from)).map(e => e.from);
+        checks.push({
+          idx: 2,
+          name: 'Every edge references an existing source node',
+          pass: badSrc.length === 0,
+          detail: badSrc.length === 0 ? `${wf.edges.length} source endpoints verified` : `Missing sources: ${badSrc.join(', ')}`
+        });
+
+        // 3. Every edge references an existing destination node
+        const badDst = wf.edges.filter(e => !nodeMap.has(e.to)).map(e => e.to);
+        checks.push({
+          idx: 3,
+          name: 'Every edge references an existing destination node',
+          pass: badDst.length === 0,
+          detail: badDst.length === 0 ? `${wf.edges.length} destination endpoints verified` : `Missing destinations: ${badDst.join(', ')}`
+        });
+
+        // 4. All specified nodes are present with exact labels and types
+        const missingNodes = [];
+        spec.nodes.forEach(sn => {
+          const actual = nodeMap.get(sn.id);
+          if (!actual || actual.type !== sn.type || actual.label !== sn.label) {
+            missingNodes.push(sn.id);
+          }
+        });
+        checks.push({
+          idx: 4,
+          name: 'All specified nodes are present with exact labels',
+          pass: missingNodes.length === 0 && wf.nodes.length === spec.nodes.length,
+          detail: missingNodes.length === 0 ? `${spec.nodes.length}/${spec.nodes.length} nodes exact` : `Mismatch: ${missingNodes.join(', ')}`
+        });
+
+        // 5. All specified connections are present with exact branch conditions
+        const edgeSig = e => `${e.from}->${e.to}|${e.label || ''}`;
+        const actualEdgeSet = new Set(wf.edges.map(edgeSig));
+        const specEdgeSet = new Set(spec.edges.map(edgeSig));
+        const missingEdges = spec.edges.filter(se => !actualEdgeSet.has(edgeSig(se))).map(edgeSig);
+        checks.push({
+          idx: 5,
+          name: 'All specified connections and branch labels are present',
+          pass: missingEdges.length === 0,
+          detail: missingEdges.length === 0 ? `${spec.edges.length}/${spec.edges.length} edges matched` : `Missing: ${missingEdges.join('; ')}`
+        });
+
+        // 6. No unintended additional connections or nodes exist
+        const extraEdges = wf.edges.filter(ae => !specEdgeSet.has(edgeSig(ae))).map(edgeSig);
+        const specIdSet = new Set(spec.nodes.map(n => n.id));
+        const extraNodes = wf.nodes.filter(an => !specIdSet.has(an.id)).map(n => n.id);
+        checks.push({
+          idx: 6,
+          name: 'No unintended additional connections or nodes exist',
+          pass: extraEdges.length === 0 && extraNodes.length === 0 && wf.edges.length === spec.edges.length,
+          detail: (extraEdges.length === 0 && extraNodes.length === 0)
+            ? `Exact match (${wf.nodes.length} nodes, ${wf.edges.length} edges)`
+            : `Extra: ${[...extraNodes, ...extraEdges].join('; ')}`
+        });
+
+        // 7. Every specified activity has the correct role (and non-activities have no role)
+        const roleMismatches = [];
+        spec.nodes.forEach(sn => {
+          const actual = nodeMap.get(sn.id);
+          if (!actual) return;
+          if (sn.type === 'activity' && actual.role !== sn.role) {
+            roleMismatches.push(`${sn.id} expected ${sn.role}`);
+          } else if (sn.type !== 'activity' && actual.role) {
+            roleMismatches.push(`${sn.id} must not carry a role`);
+          }
+        });
+        checks.push({
+          idx: 7,
+          name: 'Every specified activity has the correct role badge',
+          pass: roleMismatches.length === 0,
+          detail: roleMismatches.length === 0 ? `Roles verified: ${spec.roles.join(', ')}` : roleMismatches.join('; ')
+        });
+
+        // 8. Both end states exist independently
+        const end1Id = `${key}-END-01`;
+        const end2Id = `${key}-END-02`;
+        const end1 = nodeMap.get(end1Id);
+        const end2 = nodeMap.get(end2Id);
+        const end1In = wf.edges.filter(e => e.to === end1Id);
+        const end2In = wf.edges.filter(e => e.to === end2Id);
+        const end1Out = wf.edges.filter(e => e.from === end1Id);
+        const end2Out = wf.edges.filter(e => e.from === end2Id);
+        const endOk = Boolean(end1 && end2 && end1.id !== end2.id &&
+          end1In.length === 1 && end2In.length === 1 &&
+          end1Out.length === 0 && end2Out.length === 0 &&
+          end1In[0].from !== end2In[0].from);
+        checks.push({
+          idx: 8,
+          name: 'Both end states (END-01 & END-02) exist independently',
+          pass: endOk,
+          detail: endOk
+            ? `${end1Id} (<- ${end1In[0].from}) & ${end2Id} (<- ${end2In[0].from}) are distinct`
+            : 'End states are merged or malformed'
+        });
+
+        // 9. No node or connector extends outside the SVG viewport
+        const outOfBounds = [];
+        renderedSvg.querySelectorAll('.wf-node, .wf-edge, .wf-legend').forEach(elNode => {
+          const b = elNode.getBBox();
+          if (b.x < 0 || b.y < 0 || b.x + b.width > VIEW_W || b.y + b.height > VIEW_H) {
+            const label = elNode.getAttribute('data-node-id') || elNode.getAttribute('data-from') || 'element';
+            outOfBounds.push(label);
+          }
+        });
+        checks.push({
+          idx: 9,
+          name: 'No node or connector extends outside the SVG viewport',
+          pass: outOfBounds.length === 0,
+          detail: outOfBounds.length === 0
+            ? `All elements inside 0..${VIEW_W} × 0..${VIEW_H}`
+            : `Out of bounds: ${outOfBounds.join(', ')}`
+        });
+
+        // 10. No text element is clipped by its node boundary
+        const clippedTexts = [];
+        renderedSvg.querySelectorAll('.wf-node').forEach(nodeGroup => {
+          const id = nodeGroup.getAttribute('data-node-id');
+          const node = nodeMap.get(id);
+          if (node) {
+            clippedTexts.push(...validateTextInsideNodeBoundary(node, nodeGroup));
+          }
+        });
+        checks.push({
+          idx: 10,
+          name: 'No text element is clipped by its node boundary',
+          pass: clippedTexts.length === 0,
+          detail: clippedTexts.length === 0
+            ? `All ${wf.nodes.length} node boundaries verified via SVG getBBox()`
+            : `Clipped: ${clippedTexts.join(', ')}`
+        });
+
+        // 11. Rendered diagram contains all specified node IDs
+        const domIds = new Set(
+          Array.from(renderedSvg.querySelectorAll('.wf-node[data-node-id]'))
+            .map(n => n.getAttribute('data-node-id'))
+        );
+        const visibleIdText = new Set(
+          Array.from(renderedSvg.querySelectorAll('.wf-node-id'))
+            .map(t => (t.textContent || '').trim())
+        );
+        const missingRendered = spec.nodes
+          .filter(sn => !domIds.has(sn.id) || !visibleIdText.has(sn.id))
+          .map(sn => sn.id);
+        checks.push({
+          idx: 11,
+          name: 'Rendered diagram visibly contains all specified node IDs',
+          pass: missingRendered.length === 0,
+          detail: missingRendered.length === 0
+            ? `All ${spec.nodes.length} IDs rendered in SVG DOM`
+            : `Missing in DOM: ${missingRendered.join(', ')}`
+        });
+
+        // 12. Export functions target the actual selected diagram & A3 dimensions
+        const exportFileBase = wf.exportBaseName;
+        const expectedBase = key === 'ASIS' ? 'AsIs_Workflow' : 'ToBe_Workflow';
+        const svgAttrOk = renderedSvg.getAttribute('data-workflow-key') === key &&
+          renderedSvg.getAttribute('width') === '420mm' &&
+          renderedSvg.getAttribute('height') === '297mm' &&
+          renderedSvg.getAttribute('viewBox') === `0 0 ${VIEW_W} ${VIEW_H}` &&
+          exportFileBase === expectedBase;
+        checks.push({
+          idx: 12,
+          name: 'Export pipeline operates on the selected diagram (A3 Landscape)',
+          pass: svgAttrOk,
+          detail: `Target: ${exportFileBase}.svg (420mm×297mm) & ${exportFileBase}.png (${EXPORT_PNG_W}×${EXPORT_PNG_H})`
+        });
+
+        const passedCount = checks.filter(c => c.pass).length;
+        return {
+          key: key,
+          title: wf.title,
+          nodeCount: wf.nodes.length,
+          edgeCount: wf.edges.length,
+          passed: passedCount === checks.length,
+          passedCount: passedCount,
+          totalCount: checks.length,
+          checks: checks
+        };
+      }
+
+      function showToast(msg) {
+        el.toast.textContent = msg;
+        el.toast.classList.add('visible');
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => {
+          el.toast.classList.remove('visible');
+        }, 2600);
+      }
+
+      function applyTransform() {
+        el.panZoomLayer.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+        el.zoomReadout.textContent = `${Math.round(state.zoom * 100)}%`;
+      }
+
+      function fitToScreen() {
+        const rect = el.stage.getBoundingClientRect();
+        const pad = 28;
+        const availW = Math.max(200, rect.width - pad * 2);
+        const availH = Math.max(150, rect.height - pad * 2);
+        const scale = Math.min(availW / VIEW_W, availH / VIEW_H);
+        state.zoom = Math.max(0.15, Math.min(2.5, scale));
+        state.panX = (rect.width - VIEW_W * state.zoom) / 2;
+        state.panY = (rect.height - VIEW_H * state.zoom) / 2;
+        applyTransform();
+      }
+
+      function zoomAtCenter(factor) {
+        const rect = el.stage.getBoundingClientRect();
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        zoomAtPoint(factor, cx, cy);
+      }
+
+      function zoomAtPoint(factor, clientLocalX, clientLocalY) {
+        const nextZoom = Math.max(0.2, Math.min(3.5, state.zoom * factor));
+        const ratio = nextZoom / state.zoom;
+        state.panX = clientLocalX - (clientLocalX - state.panX) * ratio;
+        state.panY = clientLocalY - (clientLocalY - state.panY) * ratio;
+        state.zoom = nextZoom;
+        applyTransform();
+      }
+
+      function resetZoom() {
+        const rect = el.stage.getBoundingClientRect();
+        state.zoom = 1;
+        state.panX = Math.max(16, (rect.width - VIEW_W) / 2);
+        state.panY = Math.max(16, (rect.height - VIEW_H) / 2);
+        applyTransform();
+      }
+
+      function updateValidationUI() {
+        const activeRes = state.validationResults[state.activeKey];
+        const asisRes = state.validationResults.ASIS;
+        const tobeRes = state.validationResults.TOBE;
+        if (!activeRes) return;
+
+        el.validationPill.classList.toggle('fail', !activeRes.passed);
+        el.validationSummary.textContent = activeRes.passed
+          ? `Validation: PASSED (${activeRes.passedCount}/${activeRes.totalCount} checks)`
+          : `Validation: FAILED (${activeRes.passedCount}/${activeRes.totalCount} checks)`;
+
+        el.diagramStats.textContent = `${WORKFLOW_DATA[state.activeKey].exportBaseName} · ${activeRes.nodeCount} Nodes · ${activeRes.edgeCount} Connections`;
+
+        const asisLabel = asisRes ? (asisRes.passed ? 'PASS' : 'FAIL') : '...';
+        const tobeLabel = tobeRes ? (tobeRes.passed ? 'PASS' : 'FAIL') : '...';
+        el.allStatus.textContent = `As-Is: ${asisLabel} | To-Be: ${tobeLabel}`;
+
+        el.drawerTitle.textContent = `Validation Report — ${activeRes.key} (${activeRes.passedCount}/${activeRes.totalCount})`;
+        el.drawerBody.innerHTML = '';
+        activeRes.checks.forEach(chk => {
+          const row = document.createElement('div');
+          row.className = 'check-row';
+
+          const idx = document.createElement('span');
+          idx.className = 'check-idx';
+          idx.textContent = `#${chk.idx}`;
+
+          const nameWrap = document.createElement('div');
+          nameWrap.className = 'check-name';
+          nameWrap.textContent = chk.name;
+
+          const detail = document.createElement('span');
+          detail.className = 'check-detail';
+          detail.textContent = chk.detail;
+          nameWrap.appendChild(detail);
+
+          const badge = document.createElement('span');
+          badge.className = `check-badge ${chk.pass ? 'pass' : 'fail'}`;
+          badge.textContent = chk.pass ? 'PASS' : 'FAIL';
+
+          row.appendChild(idx);
+          row.appendChild(nameWrap);
+          row.appendChild(badge);
+          el.drawerBody.appendChild(row);
+        });
+      }
+
+      function validateOffscreenWorkflow(key) {
+        const tempSvg = buildWorkflowSVG(WORKFLOW_DATA[key]);
+        tempSvg.setAttribute('id', `offscreen-svg-${key}`);
+        el.offscreen.innerHTML = '';
+        el.offscreen.appendChild(tempSvg);
+        ensureTextFitsInNodes(tempSvg, WORKFLOW_DATA[key]);
+        state.validationResults[key] = validateWorkflow(key, tempSvg);
+        el.offscreen.innerHTML = '';
+      }
+
+      function renderActiveWorkflow(shouldFit) {
+        const wf = WORKFLOW_DATA[state.activeKey];
+        const svg = buildWorkflowSVG(wf);
+        el.sheetFrame.innerHTML = '';
+        el.sheetFrame.appendChild(svg);
+        ensureTextFitsInNodes(svg, wf);
+        state.validationResults[state.activeKey] = validateWorkflow(state.activeKey, svg);
+        updateValidationUI();
+        if (shouldFit) {
+          fitToScreen();
+        }
+      }
+
+      function switchWorkflow(key) {
+        if (!WORKFLOW_DATA[key] || state.activeKey === key) return;
+        state.activeKey = key;
+        el.tabAsis.classList.toggle('active', key === 'ASIS');
+        el.tabAsis.setAttribute('aria-selected', String(key === 'ASIS'));
+        el.tabTobe.classList.toggle('active', key === 'TOBE');
+        el.tabTobe.setAttribute('aria-selected', String(key === 'TOBE'));
+        renderActiveWorkflow(true);
+      }
+
+      function triggerDownload(url, filename) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      function buildStandaloneSvgString(pixelMode) {
+        const liveSvg = document.getElementById('workflow-svg');
+        if (!liveSvg || liveSvg.getAttribute('data-workflow-key') !== state.activeKey) {
+          throw new Error('Active SVG mismatch.');
+        }
+        const clone = liveSvg.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.setAttribute('xmlns', SVG_NS);
+        clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+        clone.setAttribute('viewBox', `0 0 ${VIEW_W} ${VIEW_H}`);
+        if (pixelMode) {
+          clone.setAttribute('width', String(EXPORT_PNG_W));
+          clone.setAttribute('height', String(EXPORT_PNG_H));
+        } else {
+          clone.setAttribute('width', '420mm');
+          clone.setAttribute('height', '297mm');
+        }
+        const serialized = new XMLSerializer().serializeToString(clone);
+        return '<?xml version="1.0" encoding="UTF-8"?>\n' + serialized;
+      }
+
+      function svgStringToBase64DataUrl(svgStr) {
+        const bytes = new TextEncoder().encode(svgStr);
+        let binary = '';
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        return 'data:image/svg+xml;base64,' + btoa(binary);
+      }
+
+      function exportCurrentSVG() {
+        const wf = WORKFLOW_DATA[state.activeKey];
+        const filename = `${wf.exportBaseName}.svg`;
+        const svgStr = buildStandaloneSvgString(false);
+        const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, filename);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast(`Exported ${filename}`);
+      }
+
+      function exportCurrentPNG() {
+        const wf = WORKFLOW_DATA[state.activeKey];
+        const filename = `${wf.exportBaseName}.png`;
+        const svgStr = buildStandaloneSvgString(true);
+        const dataUrl = svgStringToBase64DataUrl(svgStr);
+
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = EXPORT_PNG_W;
+          canvas.height = EXPORT_PNG_H;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, EXPORT_PNG_W, EXPORT_PNG_H);
+          ctx.drawImage(img, 0, 0, EXPORT_PNG_W, EXPORT_PNG_H);
+
+          if (canvas.toBlob) {
+            canvas.toBlob(function (blob) {
+              if (!blob) {
+                const fallbackUrl = canvas.toDataURL('image/png');
+                triggerDownload(fallbackUrl, filename);
+                showToast(`Exported ${filename} (${EXPORT_PNG_W}×${EXPORT_PNG_H})`);
+                return;
+              }
+              const blobUrl = URL.createObjectURL(blob);
+              triggerDownload(blobUrl, filename);
+              setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+              showToast(`Exported ${filename} (${EXPORT_PNG_W}×${EXPORT_PNG_H})`);
+            }, 'image/png');
+          } else {
+            const pngUrl = canvas.toDataURL('image/png');
+            triggerDownload(pngUrl, filename);
+            showToast(`Exported ${filename} (${EXPORT_PNG_W}×${EXPORT_PNG_H})`);
+          }
+        };
+        img.onerror = function () {
+          showToast('PNG export failed in this browser.');
+        };
+        img.src = dataUrl;
+      }
+
+      function bindEvents() {
+        el.tabAsis.addEventListener('click', () => switchWorkflow('ASIS'));
+        el.tabTobe.addEventListener('click', () => switchWorkflow('TOBE'));
+
+        el.btnFit.addEventListener('click', fitToScreen);
+        el.btnZoomIn.addEventListener('click', () => zoomAtCenter(1.18));
+        el.btnZoomOut.addEventListener('click', () => zoomAtCenter(1 / 1.18));
+        el.btnZoomReset.addEventListener('click', resetZoom);
+
+        el.btnExportSvg.addEventListener('click', exportCurrentSVG);
+        el.btnExportPng.addEventListener('click', exportCurrentPNG);
+
+        el.btnToggleValidation.addEventListener('click', () => {
+          el.drawer.classList.toggle('open');
+        });
+        el.btnCloseDrawer.addEventListener('click', () => {
+          el.drawer.classList.remove('open');
+        });
+
+        // Mouse pan & wheel zoom
+        el.stage.addEventListener('mousedown', (e) => {
+          if (e.button !== 0) return;
+          state.dragging = true;
+          state.dragStartX = e.clientX;
+          state.dragStartY = e.clientY;
+          state.panStartX = state.panX;
+          state.panStartY = state.panY;
+          el.stage.classList.add('dragging');
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!state.dragging) return;
+          state.panX = state.panStartX + (e.clientX - state.dragStartX);
+          state.panY = state.panStartY + (e.clientY - state.dragStartY);
+          applyTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (!state.dragging) return;
+          state.dragging = false;
+          el.stage.classList.remove('dragging');
+        });
+
+        el.stage.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const rect = el.stage.getBoundingClientRect();
+          const localX = e.clientX - rect.left;
+          const localY = e.clientY - rect.top;
+          const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+          zoomAtPoint(factor, localX, localY);
+        }, { passive: false });
+
+        window.addEventListener('resize', fitToScreen);
+      }
+
+      function init() {
+        bindEvents();
+        validateOffscreenWorkflow('TOBE');
+        renderActiveWorkflow(true);
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>

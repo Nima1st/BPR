@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_AsIs_V4"
+  targetNamespace="http://nima-edtech.example.org/bpr/asis/v4">
+
+  <bpmn:collaboration id="Collab_AsIs_V4">
+    <bpmn:participant id="Part_Enrollment_AsIs" name="Enrollment Unit / System (خارج از محدوده)" />
+    <bpmn:participant id="Part_Unit_AsIs" name="Learning Operations &amp; Personalization" processRef="Process_Unit_AsIs" />
+    <bpmn:participant id="Part_Learner_AsIs" name="Learner (فراگیر - خارج از محدوده)" />
+
+    <bpmn:messageFlow id="ASIS-MF01" name="اعلان ثبت‌نام قطعی" sourceRef="Part_Enrollment_AsIs" targetRef="ASIS-S01" />
+    <bpmn:messageFlow id="ASIS-MF02" name="استعلام نقص ثبت‌نام" sourceRef="ASIS-A02" targetRef="Part_Enrollment_AsIs" />
+    <bpmn:messageFlow id="ASIS-MF02_IN" name="دریافت اصلاحیه ثبت‌نام" sourceRef="Part_Enrollment_AsIs" targetRef="ASIS-A02" />
+    <bpmn:messageFlow id="ASIS-MF03" name="ارسال لینک ارزیابی و هدف" sourceRef="ASIS-A03" targetRef="Part_Learner_AsIs" />
+    <bpmn:messageFlow id="ASIS-MF04" name="ارسال پاسخ‌های ارزیابی" sourceRef="Part_Learner_AsIs" targetRef="ASIS-E01" />
+    <bpmn:messageFlow id="ASIS-MF05" name="ایمیل یادآوری تکمیل" sourceRef="ASIS-A04" targetRef="Part_Learner_AsIs" />
+    <bpmn:messageFlow id="ASIS-MF06" name="ارسال پاسخ پس از یادآوری" sourceRef="Part_Learner_AsIs" targetRef="ASIS-E03" />
+    <bpmn:messageFlow id="ASIS-MF07" name="درخواست ارسال مجدد بخش ناقص" sourceRef="ASIS-A06" targetRef="Part_Learner_AsIs" />
+    <bpmn:messageFlow id="ASIS-MF08" name="ابلاغ مسیر یادگیری تخصیص‌یافته" sourceRef="ASIS-A11" targetRef="Part_Learner_AsIs" />
+    <bpmn:messageFlow id="ASIS-MF09" name="ابلاغ مسیر استاندارد پایه" sourceRef="ASIS-A12" targetRef="Part_Learner_AsIs" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Unit_AsIs" name="As-Is Learner Diagnostic Assessment, Skill Gap Analysis &amp; Personalized Learning Path Assignment (V4)" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_AsIs">
+      <bpmn:lane id="Lane_Coord_AsIs" name="Learning Operations Coordinator (هماهنگ‌کننده عملیات یادگیری)">
+        <bpmn:flowNodeRef>ASIS-S01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-G01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-MG01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-MG02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-G02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-E01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-E02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-G03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-E03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-E04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A12</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-END-02</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-MG03</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A05</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-G04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A06</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A11</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-END-01</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Spec_AsIs" name="Assessment &amp; Skill Specialist (متخصص ارزیابی و تحلیل مهارت)">
+        <bpmn:flowNodeRef>ASIS-A07</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A08</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A10</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Adv_AsIs" name="Learning Advisor (مشاور یادگیری)">
+        <bpmn:flowNodeRef>ASIS-MG04</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-A09</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ASIS-G05</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="ASIS-S01" name="دریافت اعلان ثبت‌نام قطعی">
+      <bpmn:outgoing>ASIS-SF01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_ASIS_S01" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="ASIS-A01" name="ASIS-A01: ثبت و کنترل اولیه پرونده ثبت‌نام">
+      <bpmn:incoming>ASIS-SF01</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF02</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="ASIS-G01" name="اطلاعات اولیه کامل است؟" gatewayDirection="Diverging">
+      <bpmn:incoming>ASIS-SF02</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF03</bpmn:outgoing>
+      <bpmn:outgoing>ASIS-SF04</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="ASIS-A02" name="ASIS-A02: پیگیری و رفع نقص اطلاعات ثبت‌نام">
+      <bpmn:incoming>ASIS-SF04</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF05</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="ASIS-MG01" name="ادغام مسیر تکمیل داده" gatewayDirection="Converging">
+      <bpmn:incoming>ASIS-SF03</bpmn:incoming>
+      <bpmn:incoming>ASIS-SF05</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF06</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sendTask id="ASIS-A03" name="ASIS-A03: آماده‌سازی و ارسال بسته ارزیابی و هدف">
+      <bpmn:incoming>ASIS-SF06</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF07</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:exclusiveGateway id="ASIS-MG02" name="ادغام انتظار پاسخ" gatewayDirection="Converging">
+      <bpmn:incoming>ASIS-SF07</bpmn:incoming>
+      <bpmn:incoming>ASIS-SF22</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF08</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:eventBasedGateway id="ASIS-G02" name="انتظار پاسخ یا مهلت اولیه" gatewayDirection="Diverging">
+      <bpmn:incoming>ASIS-SF08</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF09</bpmn:outgoing>
+      <bpmn:outgoing>ASIS-SF10</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="ASIS-E01" name="دریافت پاسخ ارزیابی">
+      <bpmn:incoming>ASIS-SF09</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF11</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_ASIS_E01" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="ASIS-E02" name="انقضای مهلت اولیه (فرض: ۷۲ ساعت)">
+      <bpmn:incoming>ASIS-SF10</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF12</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_ASIS_E02">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT72H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:sendTask id="ASIS-A04" name="ASIS-A04: ارسال یادآوری دستی و پیگیری فراگیر">
+      <bpmn:incoming>ASIS-SF12</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF13</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:eventBasedGateway id="ASIS-G03" name="انتظار پاسخ پس از یادآوری یا مهلت نهایی" gatewayDirection="Diverging">
+      <bpmn:incoming>ASIS-SF13</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF14</bpmn:outgoing>
+      <bpmn:outgoing>ASIS-SF15</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <bpmn:intermediateCatchEvent id="ASIS-E03" name="دریافت پاسخ پس از یادآوری">
+      <bpmn:incoming>ASIS-SF14</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF16</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_ASIS_E03" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:intermediateCatchEvent id="ASIS-E04" name="انقضای مهلت نهایی (فرض: ۴۸ ساعت)">
+      <bpmn:incoming>ASIS-SF15</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF17</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_ASIS_E04">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="ASIS-A12" name="ASIS-A12: ثبت وضعیت ناتمام و تخصیص دستی مسیر پایه">
+      <bpmn:incoming>ASIS-SF17</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF18</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="ASIS-END-02" name="پایان: تخصیص مسیر استاندارد پایه">
+      <bpmn:incoming>ASIS-SF18</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:exclusiveGateway id="ASIS-MG03" name="ادغام دریافت پاسخ" gatewayDirection="Converging">
+      <bpmn:incoming>ASIS-SF11</bpmn:incoming>
+      <bpmn:incoming>ASIS-SF16</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF19</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="ASIS-A05" name="ASIS-A05: دریافت و کنترل شکلی کامل‌بودن پاسخ‌ها">
+      <bpmn:incoming>ASIS-SF19</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF20</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="ASIS-G04" name="پاسخ‌ها کامل و قابل نمره‌دهی هستند؟" gatewayDirection="Diverging">
+      <bpmn:incoming>ASIS-SF20</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF21</bpmn:outgoing>
+      <bpmn:outgoing>ASIS-SF23</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sendTask id="ASIS-A06" name="ASIS-A06: درخواست تکمیل یا ارسال مجدد از فراگیر">
+      <bpmn:incoming>ASIS-SF21</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF22</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:userTask id="ASIS-A07" name="ASIS-A07: تصحیح دستی و تجمیع نمرات سه مهارت">
+      <bpmn:incoming>ASIS-SF23</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF24</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="ASIS-A08" name="ASIS-A08: تحلیل دستی شکاف مهارتی و پیش‌نویس مسیر">
+      <bpmn:incoming>ASIS-SF24</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF25</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="ASIS-MG04" name="ادغام ورود به بازبینی مشاور" gatewayDirection="Converging">
+      <bpmn:incoming>ASIS-SF25</bpmn:incoming>
+      <bpmn:incoming>ASIS-SF29</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF26</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="ASIS-A09" name="ASIS-A09: بازبینی انطباق مسیر با سوابق و اهداف">
+      <bpmn:incoming>ASIS-SF26</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF27</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="ASIS-G05" name="مسیر پیشنهادی تأیید می‌شود؟" gatewayDirection="Diverging">
+      <bpmn:incoming>ASIS-SF27</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF28</bpmn:outgoing>
+      <bpmn:outgoing>ASIS-SF30</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="ASIS-A10" name="ASIS-A10: بازنگری نمره‌دهی و اصلاح تحلیل شکاف">
+      <bpmn:incoming>ASIS-SF28</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF29</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="ASIS-A11" name="ASIS-A11: ثبت دستی مسیر در LMS و ارسال ایمیل نتیجه">
+      <bpmn:incoming>ASIS-SF30</bpmn:incoming>
+      <bpmn:outgoing>ASIS-SF31</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="ASIS-END-01" name="پایان: تخصیص مسیر یادگیری شخصی‌سازی‌شده">
+      <bpmn:incoming>ASIS-SF31</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="ASIS-SF01" sourceRef="ASIS-S01" targetRef="ASIS-A01" />
+    <bpmn:sequenceFlow id="ASIS-SF02" sourceRef="ASIS-A01" targetRef="ASIS-G01" />
+    <bpmn:sequenceFlow id="ASIS-SF03" name="بله (کامل)" sourceRef="ASIS-G01" targetRef="ASIS-MG01">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">اطلاعات اولیه کامل است</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF04" name="خیر (ناقص)" sourceRef="ASIS-G01" targetRef="ASIS-A02">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">اطلاعات اولیه ناقص است</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF05" sourceRef="ASIS-A02" targetRef="ASIS-MG01" />
+    <bpmn:sequenceFlow id="ASIS-SF06" sourceRef="ASIS-MG01" targetRef="ASIS-A03" />
+    <bpmn:sequenceFlow id="ASIS-SF07" sourceRef="ASIS-A03" targetRef="ASIS-MG02" />
+    <bpmn:sequenceFlow id="ASIS-SF08" sourceRef="ASIS-MG02" targetRef="ASIS-G02" />
+    <bpmn:sequenceFlow id="ASIS-SF09" sourceRef="ASIS-G02" targetRef="ASIS-E01" />
+    <bpmn:sequenceFlow id="ASIS-SF10" sourceRef="ASIS-G02" targetRef="ASIS-E02" />
+    <bpmn:sequenceFlow id="ASIS-SF11" sourceRef="ASIS-E01" targetRef="ASIS-MG03" />
+    <bpmn:sequenceFlow id="ASIS-SF12" sourceRef="ASIS-E02" targetRef="ASIS-A04" />
+    <bpmn:sequenceFlow id="ASIS-SF13" sourceRef="ASIS-A04" targetRef="ASIS-G03" />
+    <bpmn:sequenceFlow id="ASIS-SF14" sourceRef="ASIS-G03" targetRef="ASIS-E03" />
+    <bpmn:sequenceFlow id="ASIS-SF15" sourceRef="ASIS-G03" targetRef="ASIS-E04" />
+    <bpmn:sequenceFlow id="ASIS-SF16" sourceRef="ASIS-E03" targetRef="ASIS-MG03" />
+    <bpmn:sequenceFlow id="ASIS-SF17" sourceRef="ASIS-E04" targetRef="ASIS-A12" />
+    <bpmn:sequenceFlow id="ASIS-SF18" sourceRef="ASIS-A12" targetRef="ASIS-END-02" />
+    <bpmn:sequenceFlow id="ASIS-SF19" sourceRef="ASIS-MG03" targetRef="ASIS-A05" />
+    <bpmn:sequenceFlow id="ASIS-SF20" sourceRef="ASIS-A05" targetRef="ASIS-G04" />
+    <bpmn:sequenceFlow id="ASIS-SF21" name="خیر (ناقص)" sourceRef="ASIS-G04" targetRef="ASIS-A06">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">پاسخ‌ها ناقص یا مخدوش هستند</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF22" sourceRef="ASIS-A06" targetRef="ASIS-MG02" />
+    <bpmn:sequenceFlow id="ASIS-SF23" name="بله (کامل)" sourceRef="ASIS-G04" targetRef="ASIS-A07">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">پاسخ‌ها کامل و قابل نمره‌دهی هستند</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF24" sourceRef="ASIS-A07" targetRef="ASIS-A08" />
+    <bpmn:sequenceFlow id="ASIS-SF25" sourceRef="ASIS-A08" targetRef="ASIS-MG04" />
+    <bpmn:sequenceFlow id="ASIS-SF26" sourceRef="ASIS-MG04" targetRef="ASIS-A09" />
+    <bpmn:sequenceFlow id="ASIS-SF27" sourceRef="ASIS-A09" targetRef="ASIS-G05" />
+    <bpmn:sequenceFlow id="ASIS-SF28" name="خیر (نیاز به بازنگری)" sourceRef="ASIS-G05" targetRef="ASIS-A10">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">نیاز به بازنگری نمره‌دهی یا تحلیل شکاف</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF29" sourceRef="ASIS-A10" targetRef="ASIS-MG04" />
+    <bpmn:sequenceFlow id="ASIS-SF30" name="بله (تأیید نهایی)" sourceRef="ASIS-G05" targetRef="ASIS-A11">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">مسیر پیشنهادی تأیید شد</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="ASIS-SF31" sourceRef="ASIS-A11" targetRef="ASIS-END-01" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AsIs_V4">
+    <bpmndi:BPMNPlane id="BPMNPlane_AsIs_V4" bpmnElement="Collab_AsIs_V4">
+
+      <bpmndi:BPMNShape id="Shape_Part_Enrollment_AsIs" bpmnElement="Part_Enrollment_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="100" y="40" width="2600" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Part_Unit_AsIs" bpmnElement="Part_Unit_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="100" y="140" width="2600" height="660" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Coord_AsIs" bpmnElement="Lane_Coord_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="130" y="140" width="2570" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Spec_AsIs" bpmnElement="Lane_Spec_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="130" y="470" width="2570" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Adv_AsIs" bpmnElement="Lane_Adv_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="130" y="640" width="2570" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Part_Learner_AsIs" bpmnElement="Part_Learner_AsIs" isHorizontal="true">
+        <omgdc:Bounds x="100" y="830" width="2600" height="70" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_ASIS_S01" bpmnElement="ASIS-S01">
+        <omgdc:Bounds x="200" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A01" bpmnElement="ASIS-A01">
+        <omgdc:Bounds x="290" y="245" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_G01" bpmnElement="ASIS-G01" isMarkerVisible="true">
+        <omgdc:Bounds x="470" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A02" bpmnElement="ASIS-A02">
+        <omgdc:Bounds x="430" y="375" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_MG01" bpmnElement="ASIS-MG01" isMarkerVisible="true">
+        <omgdc:Bounds x="610" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A03" bpmnElement="ASIS-A03">
+        <omgdc:Bounds x="710" y="245" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_MG02" bpmnElement="ASIS-MG02" isMarkerVisible="true">
+        <omgdc:Bounds x="890" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_G02" bpmnElement="ASIS-G02">
+        <omgdc:Bounds x="990" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_E01" bpmnElement="ASIS-E01">
+        <omgdc:Bounds x="1100" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_E02" bpmnElement="ASIS-E02">
+        <omgdc:Bounds x="1020" y="392" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A04" bpmnElement="ASIS-A04">
+        <omgdc:Bounds x="1145" y="375" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_G03" bpmnElement="ASIS-G03">
+        <omgdc:Bounds x="1300" y="385" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_E03" bpmnElement="ASIS-E03">
+        <omgdc:Bounds x="1380" y="300" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_E04" bpmnElement="ASIS-E04">
+        <omgdc:Bounds x="1430" y="392" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A12" bpmnElement="ASIS-A12">
+        <omgdc:Bounds x="1520" y="375" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_END02" bpmnElement="ASIS-END-02">
+        <omgdc:Bounds x="1700" y="392" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_MG03" bpmnElement="ASIS-MG03" isMarkerVisible="true">
+        <omgdc:Bounds x="1430" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A05" bpmnElement="ASIS-A05">
+        <omgdc:Bounds x="1520" y="245" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_G04" bpmnElement="ASIS-G04" isMarkerVisible="true">
+        <omgdc:Bounds x="1690" y="255" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A06" bpmnElement="ASIS-A06">
+        <omgdc:Bounds x="1650" y="148" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A07" bpmnElement="ASIS-A07">
+        <omgdc:Bounds x="1790" y="520" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A08" bpmnElement="ASIS-A08">
+        <omgdc:Bounds x="1970" y="520" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_MG04" bpmnElement="ASIS-MG04" isMarkerVisible="true">
+        <omgdc:Bounds x="2010" y="695" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A09" bpmnElement="ASIS-A09">
+        <omgdc:Bounds x="2110" y="685" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_G05" bpmnElement="ASIS-G05" isMarkerVisible="true">
+        <omgdc:Bounds x="2290" y="695" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A10" bpmnElement="ASIS-A10">
+        <omgdc:Bounds x="2250" y="520" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_A11" bpmnElement="ASIS-A11">
+        <omgdc:Bounds x="2400" y="245" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ASIS_END01" bpmnElement="ASIS-END-01">
+        <omgdc:Bounds x="2590" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF01" bpmnElement="ASIS-SF01">
+        <omgdi:waypoint x="236" y="280" />
+        <omgdi:waypoint x="290" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF02" bpmnElement="ASIS-SF02">
+        <omgdi:waypoint x="420" y="280" />
+        <omgdi:waypoint x="470" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF03" bpmnElement="ASIS-SF03">
+        <omgdi:waypoint x="520" y="280" />
+        <omgdi:waypoint x="610" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF04" bpmnElement="ASIS-SF04">
+        <omgdi:waypoint x="495" y="305" />
+        <omgdi:waypoint x="495" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF05" bpmnElement="ASIS-SF05">
+        <omgdi:waypoint x="560" y="410" />
+        <omgdi:waypoint x="635" y="410" />
+        <omgdi:waypoint x="635" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF06" bpmnElement="ASIS-SF06">
+        <omgdi:waypoint x="660" y="280" />
+        <omgdi:waypoint x="710" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF07" bpmnElement="ASIS-SF07">
+        <omgdi:waypoint x="840" y="280" />
+        <omgdi:waypoint x="890" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF08" bpmnElement="ASIS-SF08">
+        <omgdi:waypoint x="940" y="280" />
+        <omgdi:waypoint x="990" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF09" bpmnElement="ASIS-SF09">
+        <omgdi:waypoint x="1040" y="280" />
+        <omgdi:waypoint x="1100" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF10" bpmnElement="ASIS-SF10">
+        <omgdi:waypoint x="1015" y="305" />
+        <omgdi:waypoint x="1015" y="410" />
+        <omgdi:waypoint x="1020" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF11" bpmnElement="ASIS-SF11">
+        <omgdi:waypoint x="1136" y="280" />
+        <omgdi:waypoint x="1430" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF12" bpmnElement="ASIS-SF12">
+        <omgdi:waypoint x="1056" y="410" />
+        <omgdi:waypoint x="1145" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF13" bpmnElement="ASIS-SF13">
+        <omgdi:waypoint x="1275" y="410" />
+        <omgdi:waypoint x="1300" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF14" bpmnElement="ASIS-SF14">
+        <omgdi:waypoint x="1325" y="385" />
+        <omgdi:waypoint x="1325" y="318" />
+        <omgdi:waypoint x="1380" y="318" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF15" bpmnElement="ASIS-SF15">
+        <omgdi:waypoint x="1350" y="410" />
+        <omgdi:waypoint x="1430" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF16" bpmnElement="ASIS-SF16">
+        <omgdi:waypoint x="1416" y="318" />
+        <omgdi:waypoint x="1455" y="318" />
+        <omgdi:waypoint x="1455" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF17" bpmnElement="ASIS-SF17">
+        <omgdi:waypoint x="1466" y="410" />
+        <omgdi:waypoint x="1520" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF18" bpmnElement="ASIS-SF18">
+        <omgdi:waypoint x="1650" y="410" />
+        <omgdi:waypoint x="1700" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF19" bpmnElement="ASIS-SF19">
+        <omgdi:waypoint x="1480" y="280" />
+        <omgdi:waypoint x="1520" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF20" bpmnElement="ASIS-SF20">
+        <omgdi:waypoint x="1650" y="280" />
+        <omgdi:waypoint x="1690" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF21" bpmnElement="ASIS-SF21">
+        <omgdi:waypoint x="1715" y="255" />
+        <omgdi:waypoint x="1715" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF22" bpmnElement="ASIS-SF22">
+        <omgdi:waypoint x="1650" y="183" />
+        <omgdi:waypoint x="915" y="183" />
+        <omgdi:waypoint x="915" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF23" bpmnElement="ASIS-SF23">
+        <omgdi:waypoint x="1740" y="280" />
+        <omgdi:waypoint x="1855" y="280" />
+        <omgdi:waypoint x="1855" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF24" bpmnElement="ASIS-SF24">
+        <omgdi:waypoint x="1920" y="555" />
+        <omgdi:waypoint x="1970" y="555" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF25" bpmnElement="ASIS-SF25">
+        <omgdi:waypoint x="2035" y="590" />
+        <omgdi:waypoint x="2035" y="625" />
+        <omgdi:waypoint x="1980" y="625" />
+        <omgdi:waypoint x="1980" y="720" />
+        <omgdi:waypoint x="2010" y="720" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF26" bpmnElement="ASIS-SF26">
+        <omgdi:waypoint x="2060" y="720" />
+        <omgdi:waypoint x="2110" y="720" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF27" bpmnElement="ASIS-SF27">
+        <omgdi:waypoint x="2240" y="720" />
+        <omgdi:waypoint x="2290" y="720" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF28" bpmnElement="ASIS-SF28">
+        <omgdi:waypoint x="2315" y="695" />
+        <omgdi:waypoint x="2315" y="590" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF29" bpmnElement="ASIS-SF29">
+        <omgdi:waypoint x="2250" y="555" />
+        <omgdi:waypoint x="2165" y="555" />
+        <omgdi:waypoint x="2165" y="660" />
+        <omgdi:waypoint x="2035" y="660" />
+        <omgdi:waypoint x="2035" y="695" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF30" bpmnElement="ASIS-SF30">
+        <omgdi:waypoint x="2340" y="720" />
+        <omgdi:waypoint x="2425" y="720" />
+        <omgdi:waypoint x="2425" y="315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_SF31" bpmnElement="ASIS-SF31">
+        <omgdi:waypoint x="2530" y="280" />
+        <omgdi:waypoint x="2590" y="280" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF01" bpmnElement="ASIS-MF01">
+        <omgdi:waypoint x="218" y="110" />
+        <omgdi:waypoint x="218" y="262" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF02" bpmnElement="ASIS-MF02">
+        <omgdi:waypoint x="440" y="375" />
+        <omgdi:waypoint x="440" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF02_IN" bpmnElement="ASIS-MF02_IN">
+        <omgdi:waypoint x="455" y="110" />
+        <omgdi:waypoint x="455" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF03" bpmnElement="ASIS-MF03">
+        <omgdi:waypoint x="775" y="315" />
+        <omgdi:waypoint x="775" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF04" bpmnElement="ASIS-MF04">
+        <omgdi:waypoint x="1118" y="830" />
+        <omgdi:waypoint x="1118" y="298" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF05" bpmnElement="ASIS-MF05">
+        <omgdi:waypoint x="1210" y="445" />
+        <omgdi:waypoint x="1210" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF06" bpmnElement="ASIS-MF06">
+        <omgdi:waypoint x="1398" y="830" />
+        <omgdi:waypoint x="1398" y="336" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF07" bpmnElement="ASIS-MF07">
+        <omgdi:waypoint x="1765" y="218" />
+        <omgdi:waypoint x="1765" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF08" bpmnElement="ASIS-MF08">
+        <omgdi:waypoint x="2465" y="315" />
+        <omgdi:waypoint x="2465" y="830" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ASIS_MF09" bpmnElement="ASIS-MF09">
+        <omgdi:waypoint x="1585" y="445" />
+        <omgdi:waypoint x="1585" y="830" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
